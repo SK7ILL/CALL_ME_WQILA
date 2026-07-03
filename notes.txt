@@ -1,0 +1,16 @@
+FSM: Finite stat machine , is a model with a finite number of states, where when we input things it causes a transaction to  another states with some predefined rules.
+
+Constrained Decoding: a concept that works with LLMs, where its limits its next_token predection to ones that are already given to, and choses them over the ones with higher proba that are not in with the given ones.
+
+
+How Does LLM work:
+1 - (Tokenzisation): it reads the whole prompt and turn every word to a token
+2 - (Embeddings): it takes those tokens and turns them into Vectors, then it adds the the postion vector (so 2 vector cant be identical)
+3 - (Transformer): all of those Vectors get pushed into it, so every token get a smarter
+4 - (Self-attention): used to get the importance of a token for another one, z3ma chhal mhtajo (math bullshit)
+5 - (query, key, value): inside the transformer, the token Vector is represented with 3 Vectors (QKV) , query represent the need for the important tokens, key represnt the tokens that are needed, the value represnt the value of the that key
+6 - (Feed the NeuralN): all of this shit get looped inside a neural network
+7 - (Predect): in this stage, the model looks at the last tokens vector, it encode all the infos about the prompt, then it get passed to a linear layer producing a logit for every token in its library, then the softmax turns them into proba. then the decoder picks one token and then append it
+
+
+
