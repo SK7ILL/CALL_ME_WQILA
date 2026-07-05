@@ -1,36 +1,26 @@
+from collections import Counter
 from llm_sdk import Small_LLM_Model
 import json
-from parser import Function
-
+from parser import Parse
 
 s = Small_LLM_Model()
-loaded = []
-try:
-    with open("data/input/functions_definition.json", "r") as file:
-        loaded = json.load(file)
-except BaseException as e:
-    print(e)
 
-lst = []
-for x in loaded:
-    fun = Function(**x)
-    lst.append(fun)
+Parsed = Parse()
 
-print(lst)
-
-call  = []
-with open("data/input/function_calling_tests.json") as file:
-    call = json.load(file)
-
-
-promt = []
-for x in call:
-    promt.append(x["prompt"])
-ids = s.encode(promt[3])
+ids = s.encode(Parsed.functions[0].description)
 ids = ids.tolist()[0]
+
+allowed = set()
+for x in Parsed.names:
+    ids = s.encode(x).tolist()[0]
+    allowed.update(ids)
+
 
 while True:
     logits = s.get_logits_from_input_ids(ids)
+    for i in range(len(logits)):
+        if i not in allowed:
+            logits[i] = -float("inf")
     next_t = max(range(len(logits)), key=lambda i: logits[i])
     ids.append(next_t)
     st = s.decode(next_t)
