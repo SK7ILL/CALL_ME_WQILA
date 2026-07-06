@@ -10,17 +10,23 @@ Parsed = Parse()
 ids = s.encode(Parsed.functions[0].description)
 ids = ids.tolist()[0]
 
+
 allowed = set()
+
 for x in Parsed.names:
-    ids = s.encode(x).tolist()[0]
-    allowed.update(ids)
+    # Flatten the encoded token IDs into one set
+    allowed.update(s.encode(x).tolist()[0])
 
 
+prompt = '{"name":"fn_'
+ids = s.encode(prompt)
+ids = ids.tolist()[0]
+c = 0
 while True:
     logits = s.get_logits_from_input_ids(ids)
     for i in range(len(logits)):
         if i not in allowed:
-            logits[i] = -float("inf")
+            logits[i] = float("-inf")
     next_t = max(range(len(logits)), key=lambda i: logits[i])
     ids.append(next_t)
     st = s.decode(next_t)
