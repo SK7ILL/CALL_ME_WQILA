@@ -33,4 +33,3 @@ class Parse:
             function = Function(**x)
             self.functions.append(function)
             self.names.append(x['name'])
-
