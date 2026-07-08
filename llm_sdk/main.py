@@ -1,6 +1,6 @@
 from enum import Enum, auto
 import json
-from os import stat
+import sys 
 from llm_sdk import Small_LLM_Model
 from parser import Function, Parse
 from typing import List
@@ -8,24 +8,6 @@ from typing import List
 s = Small_LLM_Model()
 
 Parsed = Parse()
-
-class State(Enum):
-    START = auto()
-    OPEN_BRACE = auto()
-    NAME_KEY = auto()
-    NAME_COLON = auto()
-    FUNCTION_NAME = auto()
-    COMMA = auto()
-    PARAMETERS_KEY = auto()
-    PARAMETERS_COLON = auto()
-    OPEN_PARAMETERS = auto()
-    PARAMETER_NAME = auto()
-    PARAMETER_COLON = auto()
-    PARAMETER_VALUE = auto()
-    NEXT_PARAMETER = auto()
-    CLOSE_PARAMETERS = auto()
-    CLOSE_OBJECT = auto()
-    DONE = auto()
 
 
 def get_prompts():
@@ -37,18 +19,9 @@ def get_prompts():
         prompts.append(x["prompt"])
     return prompts
 
-def functions_design(Parsed: Parse):
-    functions: dict[str, str] = {}
-    lst = []
-    for x in Parsed.functions:
-        designed: str = ""
-        designed = f"{x.name} ({x.parameters}) - {x.description} -> {x.returns}"
-        lst.append(designed)
-        functions[x.name] = designed
-    return lst
 
 def generate_super(pr):
-    prompt= "<|system|> You are an AI function caller."\
+    prompt = "<|system|> You are an AI function caller."\
             "Generate ONLY a JSON object."\
             'Schema:{"name": "<allowed function>", "parameters": { ... }}'\
             "Use only the provided functions."\
@@ -67,6 +40,11 @@ allowed = set()
 
 for x in Parsed.names:
     allowed.update(s.encode(x).tolist()[0])
+
+
+voc = []
+
+path = s.get_path_to_tokenizer_file()
 
 class FSM:
     def __init__(self) -> None:
@@ -121,8 +99,23 @@ def mask_unwanted(logits, allowed):
 prompts = get_prompts()
 
 
+def done(prefix):
+    function = encoded_func_names(Parsed.names)
+    for f in function:
+        if prefix == f:
+            return f
+    return None
+
+
+def encoded_func_names(names):
+    lst = []
+    for x in names:
+        lst.append(s.encode(x).tolist()[0])
+    return lst
+
 for prompt in prompts:
     state = FSM()
+    prefix = []
     func_name = None
     super_prompt = generate_super(prompt)
     super_id = s.encode(super_prompt).tolist()[0]
@@ -130,17 +123,15 @@ for prompt in prompts:
     super_id = super_id + pro_id
     while state.stat != State.DONE:
         logits = s.get_logits_from_input_ids(super_id)
-        allowed = get_allowed_tokens(state.stat , Parsed, func_name)
+        allowed = get_allowed_tokens(state.stat, Parsed, func_name)
         logits = mask_unwanted(logits, allowed)
         next_t = logits.index(max(logits))
         super_id.append(next_t)
+        prefix.append(next_t)
+        is_done = done(prefix)
+        if is_done:
+            func_name = is_done
         st = s.decode(next_t)
-        if state == State.FUNCTION_NAME:
-            name = st
-            for x in Parsed.functions:
-                if x.name == name:
-                    func_name = x
-                    break
         state.update()
         print(st, end="", flush=True)
     print()

@@ -1,4 +1,3 @@
-from dataclasses import field
 import json
 from typing import List
 from pydantic import BaseModel
@@ -35,5 +34,3 @@ class Parse:
             self.functions.append(function)
             self.names.append(x['name'])
 
-
-Parsed = Parse()
