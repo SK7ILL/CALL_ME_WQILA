@@ -3,24 +3,43 @@ import parser
 
 Parsed = parser.Parse()
 
+
 class Node:
-    def __init__(self) -> None:
-        self.i = 0
-        self.childs = {}
+    def __init__(self, i) -> None:
+        self.i = i
+        self.trans = {}
+
+
 
 class Trie:
     def __init__(self, functions):
-        self.root = Node()
         self.functions = functions
-        self.Create()
+        self.state = 0
+        self.states = []
+        self.states.append(Node(0))
+        self.trie = {}
+        self.insert_all()
 
-    def Create(self):
+    def insert(self, tokens):
+        current = 0
+        for x in tokens:
+            for c in x:
+                if c in self.states[current].trans:
+                    current = self.states[current].trans[c]
+                else:
+                    i = len(self.states)
+                    self.states.append(Node(i))
+                    self.states[current].trans[x] = i
+                    current = i
+
+    def insert_all(self):
         for x in self.functions:
-            if x not in self.root.childs:
-                self.root.childs[x] = Node()
-            self.root = self.root.childs[x]
-
+            self.insert(x)
+        for i in range(0, len(self.states)):
+            self.trie[i] = self.states[i].trans
 
 tr = Trie(Parsed.names)
-for x in tr.root.childs:
-    print(x)
+print(Parsed.names)
+
+for x in tr.trie:
+    print(x, tr.trie[x])
