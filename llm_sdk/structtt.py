@@ -18,20 +18,19 @@ class Trie:
         self.states = []
         self.states.append(Node(0))
         self.trie = {}
-        self.insert_all()
         self.fixed_string = []
-
+        self.construct()
+        self.insert_all()
 
     def construct(self):
         for x in self.Parsed.loaded:
             params = {s : None for s in x["parameters"]}
+            p = ""
             fix = '{"name": ' \
-                  f'{x["name"]}, '\
-                  f'"parameters" : {params}, '\
-                  f'"description": {x["description"]}'\
+                  f'"{x["name"]}", '\
+                  f'"parameters" : {params}'\
                   '}'
-            print(fix)
-
+            self.fixed_string.append(fix)
 
     def insert(self, tokens):
         current = 0
@@ -46,7 +45,7 @@ class Trie:
                     current = i
 
     def insert_all(self):
-        for x in self.functions:
+        for x in self.fixed_string:
             self.insert(x)
         for i in range(0, len(self.states)):
             if not self.states[i].trans:
@@ -55,5 +54,4 @@ class Trie:
                 self.trie[i] = self.states[i].trans
 
 tr = Trie(Parsed.names, Parsed)
-tr.construct()
-
+print(tr.states)
