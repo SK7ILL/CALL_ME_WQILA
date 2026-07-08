@@ -11,8 +11,7 @@ class Node:
 
 
 class Trie:
-    def __init__(self, functions, Parsed):
-        self.functions = functions
+    def __init__(self, Parsed):
         self.Parsed = Parsed
         self.state = 0
         self.states = []
@@ -25,7 +24,6 @@ class Trie:
     def construct(self):
         for x in self.Parsed.loaded:
             params = {s : None for s in x["parameters"]}
-            p = ""
             fix = '{"name": ' \
                   f'"{x["name"]}", '\
                   f'"parameters" : {params}'\
@@ -52,6 +50,3 @@ class Trie:
                 self.trie[i] = float("-inf")
             else:
                 self.trie[i] = self.states[i].trans
-
-tr = Trie(Parsed.names, Parsed)
-print(tr.states)

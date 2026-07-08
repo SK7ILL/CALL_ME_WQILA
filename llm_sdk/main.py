@@ -1,9 +1,9 @@
 from enum import Enum, auto
 import json
-import sys 
 from llm_sdk import Small_LLM_Model
 from parser import Function, Parse
 from typing import List
+from structtt import Trie
 
 s = Small_LLM_Model()
 
@@ -20,15 +20,23 @@ def get_prompts():
     return prompts
 
 
-def generate_super(pr):
+def format(Functions: List[Function]):
+    to_return = []
+    for x in Functions:
+        returned = f"{x.name} ({x.parameters}) - {x.description}"
+        to_return.append(returned)
+    return to_return
+
+
+def generate_super(Parsed: Parse):
+    func = format(Parsed.functions)
     prompt = "<|system|> You are an AI function caller."\
             "Generate ONLY a JSON object."\
-            'Schema:{"name": "<allowed function>", "parameters": { ... }}'\
             "Use only the provided functions."\
-            "Do not answer the question directly."\
-            "Do not generate explanations."\
-            f"<|user|>{pr}"\
-            "{"
+            "No explaination, No extra talk"\
+            "Allowed Functions:"\
+            f"{func}"\
+            "USER:"
 
     return prompt
 
@@ -46,55 +54,20 @@ voc = []
 
 path = s.get_path_to_tokenizer_file()
 
-class FSM:
-    def __init__(self) -> None:
-        self.stat = State.START
 
-    def update(self) -> None:
-        stats = list(self.stat.__class__)
-        i = stats.index(self.stat)
-        self.stat = stats[i + 1]
-
-def get_allowed_tokens(state, parser, function=None):
-    if state == State.START:
-        return set(s.encode("{").tolist()[0])
-    elif state == State.OPEN_BRACE:
-        return set(s.encode('"name"').tolist()[0])
-    elif state == State.NAME_COLON:
-        return set(s.encode(":").tolist()[0])
-    elif state == State.FUNCTION_NAME:
-        allowed = set()
-        for name in parser.names:
-            allowed.update(s.encode(name).tolist()[0])
-        return allowed
-    elif state == State.COMMA:
-        return set(s.encode(",").tolist()[0])
-    elif state == State.PARAMETERS_KEY:
-        return set(s.encode('"parameters"').tolist()[0])
-    elif state == State.PARAMETERS_COLON:
-        return set(s.encode(":").tolist()[0])
-    elif state == State.OPEN_PARAMETERS:
-        return set(s.encode("{").tolist()[0])
-    elif state == State.PARAMETER_NAME:
-        allowed = set()
-        if function is not None:
-            for p in function.parameters:
-                allowed.update(s.encode(p).tolist()[0])
-        return allowed
-    elif state == State.PARAMETER_COLON:
-        return set(s.encode(":").tolist()[0])
-    elif state == State.CLOSE_PARAMETERS:
-        return set(s.encode("}").tolist()[0])
-    elif state == State.CLOSE_OBJECT:
-        return set(s.encode("}").tolist()[0])
-    return set()
-
-
-def mask_unwanted(logits, allowed):
+def mask_unwanted(logits, allowed, state):
+    lst = []
+    checked = []
+    for x in allowed:
+        for k in x:
+            lst.append(k)
+    for x in lst:
+        checked.append(s.encode(x))
     for x in range(len(logits)):
         if x not in allowed:
             logits[x] = float("-inf")
-    return logits
+
+    return logits, allowed[lst[0]]
 
 prompts = get_prompts()
 
@@ -113,25 +86,22 @@ def encoded_func_names(names):
         lst.append(s.encode(x).tolist()[0])
     return lst
 
+Tr = Trie(Parsed)
+
 for prompt in prompts:
-    state = FSM()
+    state = 0
     prefix = []
     func_name = None
-    super_prompt = generate_super(prompt)
+    super_prompt = generate_super(Parsed)
     super_id = s.encode(super_prompt).tolist()[0]
     pro_id = s.encode(prompt).tolist()[0]
     super_id = super_id + pro_id
-    while state.stat != State.DONE:
+    while state != float("-inf"):
         logits = s.get_logits_from_input_ids(super_id)
-        allowed = get_allowed_tokens(state.stat, Parsed, func_name)
-        logits = mask_unwanted(logits, allowed)
+        logits, state = mask_unwanted(logits, Tr.trie[state], state)
         next_t = logits.index(max(logits))
         super_id.append(next_t)
         prefix.append(next_t)
-        is_done = done(prefix)
-        if is_done:
-            func_name = is_done
         st = s.decode(next_t)
-        state.update()
         print(st, end="", flush=True)
     print()
