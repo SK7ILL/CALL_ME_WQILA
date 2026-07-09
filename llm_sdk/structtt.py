@@ -21,7 +21,7 @@ class Trie:
 
     def construct(self):
         for x in self.Parsed.loaded:
-            params = {s : None for s in x["parameters"]}
+            params = {s : "Ɣ" for s in x["parameters"]}
             fix = '{"name": ' \
                   f'"{x["name"]}", '\
                   f'"parameters" : {params}'\
@@ -48,3 +48,8 @@ class Trie:
                 self.trie[i] = float("-inf")
             else:
                 self.trie[i] = self.states[i].trans
+
+
+tr = Trie(Parsed)
+for x in tr.trie:
+    print(x, tr.trie[x])
