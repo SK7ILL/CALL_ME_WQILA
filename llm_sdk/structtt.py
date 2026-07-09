@@ -1,8 +1,6 @@
 import parser
 
-
 Parsed = parser.Parse()
-
 
 class Node:
     def __init__(self, i) -> None:
