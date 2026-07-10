@@ -50,6 +50,7 @@ def get_prompts():
     prompts: List[str] = []
     for x in loaded:
         prompts.append(x["prompt"])
+    print(prompts)
     return prompts
 
 
@@ -77,6 +78,8 @@ def generate_super1(Parsed: Parse):
     return prompt
 
 def mask_unwanted(logits, allowed_ids, numbers):
+    if allowed_ids is ["None"]:
+        return logits
     lst = s.encode(allowed_ids).tolist()[0]
     for x in range(len(logits)):
         if [x] not in lst:
@@ -88,7 +91,6 @@ def encoded_func_names(names):
     for x in names:
         lst.append(s.encode(x).tolist()[0])
     return lst
-
 
 Tr = Trie(Parsed)
 prompts = get_prompts()
@@ -102,8 +104,9 @@ for prompt in prompts:
     while state != float("-inf"):
         node = Tr.trie[state]
         mask = s.get_logits_from_input_ids(super_id)
-        allowed_ids = list(node.keys())
-        mask = mask_unwanted(mask, allowed_ids, n)
+        if node.keys():
+            allowed_ids = list(node.keys())
+            mask = mask_unwanted(mask, allowed_ids, n)
         next_t = mask.index(max(mask))
         super_id.append(next_t)
         st = s.decode(next_t)
@@ -111,5 +114,4 @@ for prompt in prompts:
         if state == float("-inf"):
             break
         print(st, end="", flush=True)
-        n = False
     print()

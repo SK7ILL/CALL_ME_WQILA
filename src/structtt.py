@@ -60,7 +60,7 @@ class Trie:
             self.states[current + 1].trans[":"] = current + 2
             current += 1
             for p in x.parameters:
-                for c in f'"{p}": ':
+                for c in f'"{p}": '.replace(" ", "Ġ"):
                     if c in self.states[current].trans:
                         current = self.states[current].trans[c]
                     else:
@@ -69,6 +69,44 @@ class Trie:
                         self.states[current].trans[c] = i
                         current = i
                 if x.parameters[p].type == "number":
+                    n = "-0"
+                    c = 1
+                    #state 0 
+                    for z in n:
+                        if z in self.states[current].trans:
+                            current = self.states[current].trans[z]
+                        else:
+                            i = len(self.states)
+                            self.states.append(Node(i))
+                            self.states[current].trans[z] = current + c
+                        c += 1
+                        # +1 : - , +2 : 0, +3: .
+                    n = "123456789"
+                    for z in n:
+                        if z in self.states[current].trans:
+                            current = self.states[current].trans[z]
+                        else:
+                            i = len(self.states)
+                            self.states.append(Node(i))
+                            self.states[current].trans[z] = current + 3
+                    current += 1
+                    #state 1 
+                    self.states.append(Node(current))
+                    self.states[current].trans["0"] = current + 1
+                    for z in n:
+                        if z in self.states[current].trans:
+                            current = self.states[current].trans[z]
+                        else:
+                            i = len(self.states)
+                            self.states.append(Node(i))
+                            self.states[current].trans[z] = current + 2
+                    current += 1
+                    #state 2 
+                    self.states.append(Node(current))
+                    self.states[current].trans["."] = current + 2
+                    current += 1
+                    self.states.append(Node(current))
+                    self.states[current].trans["."] = current + 2
                     n = "0123456789"
                     for z in n:
                         if z in self.states[current].trans:
@@ -77,11 +115,15 @@ class Trie:
                             i = len(self.states)
                             self.states.append(Node(i))
                             self.states[current].trans[z] = current
-                    self.states.append(Node(len(self.states)))
-                    self.states[current].trans["}"] = current + 3
-                    self.states[current].trans[","] = current + 3
-                    current = current + 1
-                    n = ".0123456789"
+                    current += 1
+                    for z in n:
+                        if z in self.states[current].trans:
+                            current = self.states[current].trans[z]
+                        else:
+                            i = len(self.states)
+                            self.states.append(Node(i))
+                            self.states[current].trans[z] = current + 1
+                    current += 1
                     for z in n:
                         if z in self.states[current].trans:
                             current = self.states[current].trans[z]
@@ -89,49 +131,23 @@ class Trie:
                             i = len(self.states)
                             self.states.append(Node(i))
                             self.states[current].trans[z] = current
-                    n = "-0123456789"
-                    self.states.append(Node(len(self.states)))
-                    self.states[current].trans["}"] = current + 2
-                    self.states[current].trans[","] = current + 2
-                    current = current + 1
-                    for z in n:
-                        if z in self.states[current].trans:
-                            current = self.states[current].trans[z]
-                        else:
-                            i = len(self.states)
-                            self.states.append(Node(i))
-                            self.states[current].trans[z] = current
-                    self.states.append(Node(len(self.states)))
-                    self.states[current].trans["}"] = current + 1
-                    self.states[current].trans[","] = current + 1
+                    for z in "},":
+                        self.states.append(Node(current))
+                        self.states[current].trans[z] = current
+
                 elif x.parameters[p].type == "string":
-                    alpha = "abcdefhijklmnopqrstuvwqyz"
-                    Alpha = alpha.capitalize()
-                    for z in alpha:
-                        if z in self.states[current].trans:
-                            current = self.states[current].trans[z]
-                        else:
-                            i = len(self.states)
-                            self.states.append(Node(i))
-                            self.states[current].trans[z] = current
-                    for z in Alpha:
-                        if z in self.states[current].trans:
-                            current = self.states[current].trans[z]
-                        else:
-                            i = len(self.states)
-                            self.states.append(Node(i))
-                            self.states[current].trans[z] = current
-
-
+                    self.states.append(Node(len(self.states)))
+                    self.states[current].trans["None"] = current + 1
+                    for z in "},":
+                        self.states.append(Node(len(self.states)))
+                        self.states[current].trans[z] = current + 1
+                current += 1
 
     def insert_all(self):
         for x in self.fixed_string:
             self.insert(x)
         for i in range(0, len(self.states)):
-            if not self.states[i].trans:
-                self.trie[i] = {" ": i + 1}
-            else:
-                self.trie[i] = self.states[i].trans
+            self.trie[i] = self.states[i].trans
 
 tr = Trie(Parsed)
 for x in tr.trie:
