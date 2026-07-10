@@ -24,11 +24,10 @@ class Trie:
     def construct(self):
         for x in self.Parsed.loaded:
             params = {s : None for s in x["parameters"]}
-            fix = '{"name": ' 
-            a =   f'"{x["name"]}", '
-            c=      f'"parameters" : {params}'
-            d=    '}'
-            fix = fix + a +c +d
+            fix = '{"name": ' \
+                  f'"{x["name"]}", '\
+                  f'"parameters" : {params}'\
+                  '}'
             self.fixed_string.append(fix)
 
     def insert(self, tokens):
@@ -61,7 +60,7 @@ class Trie:
             self.states[current + 1].trans[":"] = current + 2
             current += 1
             for p in x.parameters:
-                for c in f'"{p}": '.replace(" ", "Ġ"):
+                for c in f'"{p}": ':
                     if c in self.states[current].trans:
                         current = self.states[current].trans[c]
                     else:
@@ -105,6 +104,25 @@ class Trie:
                     self.states.append(Node(len(self.states)))
                     self.states[current].trans["}"] = current + 1
                     self.states[current].trans[","] = current + 1
+                elif x.parameters[p].type == "string":
+                    alpha = "abcdefhijklmnopqrstuvwqyz"
+                    Alpha = alpha.capitalize()
+                    for z in alpha:
+                        if z in self.states[current].trans:
+                            current = self.states[current].trans[z]
+                        else:
+                            i = len(self.states)
+                            self.states.append(Node(i))
+                            self.states[current].trans[z] = current
+                    for z in Alpha:
+                        if z in self.states[current].trans:
+                            current = self.states[current].trans[z]
+                        else:
+                            i = len(self.states)
+                            self.states.append(Node(i))
+                            self.states[current].trans[z] = current
+
+
 
     def insert_all(self):
         for x in self.fixed_string:
@@ -114,7 +132,6 @@ class Trie:
                 self.trie[i] = {" ": i + 1}
             else:
                 self.trie[i] = self.states[i].trans
-
 
 tr = Trie(Parsed)
 for x in tr.trie:
