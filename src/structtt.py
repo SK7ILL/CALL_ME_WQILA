@@ -1,4 +1,4 @@
-import parser
+import src.parser as parser
 
 Parsed = parser.Parse()
 
