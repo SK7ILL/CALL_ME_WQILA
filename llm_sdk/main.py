@@ -20,6 +20,17 @@ def get_prompts():
     return prompts
 
 
+path = s.get_path_to_vocab_file()
+
+with open(path) as file:
+    loaded = json.load(file)
+
+dic = {}
+
+for key, value in loaded.items():
+    dic[value] = key
+
+
 def format(Functions: List[Function]):
     to_return = []
     for x in Functions:
