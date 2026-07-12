@@ -78,11 +78,8 @@ def generate_super1(Parsed: Parse):
     return prompt
 
 def mask_unwanted(logits, allowed_ids, numbers):
-    if allowed_ids is ["None"]:
-        return logits
-    lst = s.encode(allowed_ids).tolist()[0]
     for x in range(len(logits)):
-        if [x] not in lst:
+        if x not in allowed_ids:
             logits[x] = float("-inf")
     return logits
 
@@ -92,26 +89,31 @@ def encoded_func_names(names):
         lst.append(s.encode(x).tolist()[0])
     return lst
 
+print('\033[2J\033[H')
 Tr = Trie(Parsed)
 prompts = get_prompts()
-for prompt in prompts:
-    state = 0
-    super_prompt = generate_super(Parsed)
-    super_id = s.encode(super_prompt).tolist()[0]
-    pro_id = s.encode(prompt).tolist()[0]
-    super_id = super_id + pro_id
-    n = False
-    while state != float("-inf"):
-        node = Tr.trie[state]
-        mask = s.get_logits_from_input_ids(super_id)
-        if node.keys():
-            allowed_ids = list(node.keys())
-            mask = mask_unwanted(mask, allowed_ids, n)
-        next_t = mask.index(max(mask))
-        super_id.append(next_t)
-        st = s.decode(next_t)
-        state = node[st]
-        if state == float("-inf"):
-            break
-        print(st, end="", flush=True)
-    print()
+#for prompt in prompts:
+prompt = prompts[0]
+state = 0
+super_prompt = generate_super(Parsed)
+super_id = s.encode(super_prompt).tolist()[0]
+pro_id = s.encode(prompt).tolist()[0]
+super_id = super_id + pro_id
+n = False
+while state != float("-inf"):
+    node = Tr.trie[state]
+    mask = s.get_logits_from_input_ids(super_id)
+    allowed_ids = list(node.keys())
+    mask = mask_unwanted(mask, allowed_ids, n)
+    next_t = mask.index(max(mask))
+    #print(next_t)
+    super_id.append(next_t)
+    st = s.decode(next_t)
+    try:
+        state = node[next_t]
+    except KeyError:
+        state = float("-inf")
+    if state == float("-inf"):
+        break
+    print(st, end="", flush=True)
+print()
