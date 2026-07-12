@@ -3,6 +3,7 @@ import src.parser as parser
 
 Parsed = parser.Parse()
 llm = Small_LLM_Model()
+
 class Node:
     def __init__(self, i) -> None:
         self.i = i
@@ -15,7 +16,6 @@ class Trie:
         self.Functions = Parsed.functions
         self.state = 0
         self.states = []
-        self.states.append(Node(0))
         self.trie = {}
         self.fixed_string = []
         self.construct()
@@ -31,24 +31,25 @@ class Trie:
                   '}'
             self.fixed_string.append(fix)
 
-    def insert(self, tokens):
+    def insert(self):
         current = 0
+        self.states.append(Node(current))
         for x in llm.encode('{"name": ').tolist()[0]:
             i = len(self.states)
             self.states.append(Node(i))
             self.states[current].trans[x] = i
             current = i
         for x in self.Functions:
-            for name in x.name:
-                for c in llm.encode(name).tolist()[0]:
-                    if c in self.states[current].trans:
-                        current = self.states[current].trans[c]
-                    else:
-                        i = len(self.states)
-                        self.states.append(Node(i))
-                        self.states[current].trans[c] = i
-                        current = i
-            for s in llm.encode(',{"parameters":').tolist()[0]:
+            for c in llm.encode(x.name).tolist()[0]:
+                print(c)
+                if c in self.states[current].trans:
+                    current = self.states[current].trans[c]
+                else:
+                    i = len(self.states)
+                    self.states.append(Node(i))
+                    self.states[current].trans[c] = i
+                    current = i
+            for s in llm.encode(' ,{"parameters":').tolist()[0]:
                 if s in self.states[current].trans:
                     current = self.states[current].trans[s]
                 else:
@@ -108,14 +109,24 @@ class Trie:
                             self.states[current].trans[z] = current
                     for z in ('},'):
                         self.states[current].trans[llm.encode(z).tolist()[0][0]] = current + 1
-            self.states.append(Node(current + 1))
-            self.states[current + 1].trans["\n"] = "-inf"
+                elif x.parameters[p].type == "string":
+                    current += 1
+                    self.states.append(Node(current))
+                    self.states[current].trans[None] = current + 1
+            current += 1
+            self.states.append(Node(current))
+            self.states[current].trans["\n"] = "-inf"
+
+
 
     def insert_all(self):
-        for x in self.fixed_string:
-            self.insert(x)
+        self.insert()
         for i in range(0, len(self.states)):
             self.trie[i] = self.states[i].trans
+
+
+print(llm.encode("fn_add_numbers").tolist()[0])
+print(llm.decode(llm.encode("fn_add_numbers").tolist()[0][2]))
 
 tr = Trie(Parsed)
 for x in tr.trie:
