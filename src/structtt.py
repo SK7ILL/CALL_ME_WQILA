@@ -1,3 +1,4 @@
+from re import L
 from llm_sdk import Small_LLM_Model
 import src.parser as parser
 
@@ -31,6 +32,80 @@ class Trie:
                   '}'
             self.fixed_string.append(fix)
 
+    def add_state(self):
+        i = len(self.states)
+        self.states.append(Node(i))
+        return i 
+
+    def add_to_path(self, tokens, start):
+        current = start
+        for x in tokens:
+            i = self.states[current].trans.get(x)
+            if i is None:
+                i = self.add_state()
+                self.states[current].trans[x] = i
+            current = i
+        return current
+
+
+    def states_creation(self):
+        first = self.add_state()
+        name = self.add_to_path(llm.encode('{"name": ').tolist()[0], first)
+        for x in self.Functions:
+            current = self.add_to_path(llm.encode(f'"{x.name}"').tolist()[0], name)
+            current = self.add_to_path(llm.encode(',{"parameters": ').tolist()[0], current)
+            """for p in x.parameters:
+                if x.parameters[p].type == "number":
+                    current = self.number_state(p, current)
+                if x.parameters[p].type == "string":
+                    return 
+                    current = self.string_state(p, current)"""
+
+
+    def number_state(self, p, current):
+         if x.parameters[p].type == "number":
+            n = "-0"
+            c = 1
+            #state 0 
+            for z in llm.encode(n).tolist()[0]:
+                if z in self.states[current].trans:
+                    current = self.states[current].trans[z]
+                else:
+                    self.states[current].trans[z] = current + c
+                c += 1
+                # +1 : - , +2 : 0, +3: .
+            n = "123456789"
+            for z in llm.encode(n).tolist()[0]:
+                if z in self.states[current].trans:
+                    current = self.states[current].trans[z]
+                else:
+                    #self.states.append(Node(current))
+                    self.states[current].trans[z] = current + 2
+            #state 1 
+            self.states.append(Node(current))
+            self.states[current].trans[llm.encode("0").tolist()[0][0]] = current + 1
+            current += 1
+            for z in llm.encode(n).tolist()[0]:
+                if z in self.states[current].trans:
+                    current = self.states[current].trans[z]
+                else:
+                    i = len(self.states)
+                    self.states[current].trans[z] = current + 1
+            #state 2 
+            #self.states.append(Node(current))
+            #self.states[current].trans[llm.encode(".").tolist()[0][0]] = current
+            n = "0123456789"
+            current += 1
+            self.states.append(Node(current))
+            for z in llm.encode(n).tolist()[0]:
+                if z in self.states[current].trans:
+                    current = self.states[current].trans[z]
+                else:
+                    self.states[current].trans[z] = current
+            for z in ('},'):
+                self.states[current].trans[llm.encode(z).tolist()[0][0]] = current + 1
+
+
     def insert(self):
         current = 0
         self.states.append(Node(current))
@@ -41,7 +116,6 @@ class Trie:
             current = i
         for x in self.Functions:
             for c in llm.encode(x.name).tolist()[0]:
-                print(c)
                 if c in self.states[current].trans:
                     current = self.states[current].trans[c]
                 else:
@@ -120,13 +194,10 @@ class Trie:
 
 
     def insert_all(self):
-        self.insert()
+        self.states_creation()
         for i in range(0, len(self.states)):
             self.trie[i] = self.states[i].trans
 
-
-print(llm.encode("fn_add_numbers").tolist()[0])
-print(llm.decode(llm.encode("fn_add_numbers").tolist()[0][2]))
 
 tr = Trie(Parsed)
 for x in tr.trie:
