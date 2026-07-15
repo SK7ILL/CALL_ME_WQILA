@@ -87,27 +87,33 @@ class Trie:
             self.states[old_current].trans[dic[d]] = current + 4
         self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 5
         self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
+        old_current = self.add_state()
         return old_current
 
     def string_state(self, current):
-        current = self.add_state()
-        self.states[current].trans[None] = current + 1
-        return current
+        old_current = current
+        self.states[old_current].trans[llm.encode('"').tolist()[0][0]] = current + 1
+        old_current = self.add_state()
+        self.states[old_current].trans[None] = current + 2
+        old_current = self.add_state()
+        self.states[old_current].trans[llm.encode('"').tolist()[0][0]] = current + 3
+        old_current = self.add_state()
+        self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 4
+        self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
+        return old_current
 
     def states_creation(self):
         first = self.add_state()
         name = self.add_to_path(llm.encode('{"name": ').tolist()[0], first)
         for x in self.Functions:
             current = self.add_to_path(llm.encode(f'"{x.name}"').tolist()[0], name)
-            current = self.add_to_path(llm.encode(',{"parameters":').tolist()[0], current)
+            current = self.add_to_path(llm.encode(' ,{"parameters":').tolist()[0], current)
             for p in (x.parameters):
                 current = self.add_to_path(llm.encode(f' "{p}": ').tolist()[0], current)
                 if x.parameters[p].type == "number":
                     current = self.number_state(current)
-                    current = self.add_state()
                 if x.parameters[p].type == "string":
                     current = self.string_state(current)
-                    current = self.add_state()
 
     def insert_all(self):
         self.states_creation()
@@ -117,5 +123,5 @@ class Trie:
 
 tr = Trie(Parsed)
 for x in tr.trie:
-    #print(x,tr.trie[x])
-    print(x, tr.de[x])
+    print(x,tr.trie[x])
+    #print(x, tr.de[x])

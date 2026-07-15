@@ -75,7 +75,9 @@ def generate_super1(Parsed: Parse):
 
 
 
-def mask_unwanted(logits, allowed_ids, numbers):
+def mask_unwanted(logits, allowed_ids):
+    if allowed_ids == [None]:
+        return logits
     for x in range(len(logits)):
         if x not in allowed_ids:
             logits[x] = float("-inf")
@@ -88,7 +90,6 @@ def encoded_func_names(names):
     return lst
 
 print('\033[2J\033[H')
-
 
 Tr = Trie(Parsed)
 prompts = get_prompts()
@@ -103,15 +104,14 @@ for prompt in prompts:
         node = Tr.trie[state]
         mask = s.get_logits_from_input_ids(super_id)
         allowed_ids = list(node.keys())
-        mask = mask_unwanted(mask, allowed_ids, n)
+        mask = mask_unwanted(mask, allowed_ids)
         next_t = mask.index(max(mask))
         super_id.append(next_t)
         st = s.decode(next_t)
-        try:
-            state = node[next_t]
-        except KeyError:
-            state = float("-inf")
+        state = node.get(next_t)
+        if state is None:
+            state = node.get(None)
+        print(st, end="", flush=True)
         if state == float("-inf"):
             break
-        print(st, end="", flush=True)
     print()
