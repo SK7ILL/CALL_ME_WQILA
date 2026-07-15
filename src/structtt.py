@@ -94,12 +94,14 @@ class Trie:
         old_current = current
         self.states[old_current].trans[llm.encode('"').tolist()[0][0]] = current + 1
         old_current = self.add_state()
-        self.states[old_current].trans[None] = current + 2
-        old_current = self.add_state()
-        self.states[old_current].trans[llm.encode('"').tolist()[0][0]] = current + 3
-        old_current = self.add_state()
-        self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 4
-        self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
+        self.states[old_current].trans[None] = old_current
+        #old_current = self.add_state()
+        #self.states[old_current].trans[llm.encode('"').tolist()[0][0]] = current + 3
+        #old_current = self.add_state()
+        #self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 4
+        #self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
+        #old_current = self.add_state()
+        #self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
         return old_current
 
     def states_creation(self):
@@ -107,9 +109,9 @@ class Trie:
         name = self.add_to_path(llm.encode('{"name": ').tolist()[0], first)
         for x in self.Functions:
             current = self.add_to_path(llm.encode(f'"{x.name}"').tolist()[0], name)
-            current = self.add_to_path(llm.encode(' ,{"parameters":').tolist()[0], current)
+            current = self.add_to_path(llm.encode(', "parameters": {').tolist()[0], current)
             for p in (x.parameters):
-                current = self.add_to_path(llm.encode(f' "{p}": ').tolist()[0], current)
+                current = self.add_to_path(llm.encode(f'"{p}": ').tolist()[0], current)
                 if x.parameters[p].type == "number":
                     current = self.number_state(current)
                 if x.parameters[p].type == "string":

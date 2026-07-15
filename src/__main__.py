@@ -111,6 +111,8 @@ for prompt in prompts:
         state = node.get(next_t)
         if state is None:
             state = node.get(None)
+            if '}' in st:
+                state = float("-inf")
         print(st, end="", flush=True)
         if state == float("-inf"):
             break
