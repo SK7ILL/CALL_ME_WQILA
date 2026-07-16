@@ -121,9 +121,10 @@ class Trie:
         self.states_creation()
         for i in range(0, len(self.states)):
             self.trie[i] = self.states[i].trans
-            self.de[i] = { llm.decode(k): self.states[i].trans[k] for k in self.states[i].trans.keys() if k is not None }
+            self.de[i] = {llm.decode(k): self.states[i].trans[k] for k in self.states[i].trans.keys() if k is not None}
+
 
 tr = Trie(Parsed)
 for x in tr.trie:
-    print(x,tr.trie[x])
-    #print(x, tr.de[x])
+    #print(x,tr.trie[x])
+    print(x, tr.de[x])

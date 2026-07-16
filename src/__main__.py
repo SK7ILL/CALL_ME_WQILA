@@ -91,10 +91,14 @@ def encoded_func_names(names):
 
 print('\033[2J\033[H')
 
+with open("test.json", "w") as to_out:
+    pass
+
 Tr = Trie(Parsed)
 prompts = get_prompts()
 for prompt in prompts:
     state = 0
+    out = ""
     super_prompt = generate_super(Parsed)
     super_id = s.encode(super_prompt).tolist()[0]
     pro_id = s.encode(prompt).tolist()[0]
@@ -109,11 +113,13 @@ for prompt in prompts:
         super_id.append(next_t)
         st = s.decode(next_t)
         state = node.get(next_t)
+        out += st
         if state is None:
             state = node.get(None)
-            if '}' in st:
+            if out.endswith("}}"):
                 state = float("-inf")
         print(st, end="", flush=True)
         if state == float("-inf"):
+            json.dumps(out)
             break
     print()
