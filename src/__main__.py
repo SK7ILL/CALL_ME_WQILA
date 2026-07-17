@@ -76,10 +76,10 @@ def generate_super1(Parsed: Parse):
 
 
 def mask_unwanted(logits, allowed_ids):
-    if allowed_ids == [None]:
+    if allowed_ids is None:
         return logits
     for x in range(len(logits)):
-        if x not in allowed_ids:
+        if logits[x] not in allowed_ids:
             logits[x] = float("-inf")
     return logits
 
@@ -103,23 +103,27 @@ for prompt in prompts:
     super_id = s.encode(super_prompt).tolist()[0]
     pro_id = s.encode(prompt).tolist()[0]
     super_id = super_id + pro_id
-    n = False
+    n = True
     while 1:
         node = Tr.trie[state]
         mask = s.get_logits_from_input_ids(super_id)
-        allowed_ids = list(node.keys())
+        
+        allowed_ids = Tr.rehab(state)
+        
         mask = mask_unwanted(mask, allowed_ids)
+        
         next_t = mask.index(max(mask))
+        
         super_id.append(next_t)
+        
         st = s.decode(next_t)
-        state = node.get(next_t)
+        
+        #state = node.get(next_t)
+        
         out += st
         if state is None:
             state = node.get(None)
-            if out.endswith("}}"):
-                state = float("-inf")
         print(st, end="", flush=True)
         if state == float("-inf"):
-            json.dumps(out)
             break
     print()

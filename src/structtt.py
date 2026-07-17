@@ -1,3 +1,4 @@
+from pydantic import functional_serializers
 from llm_sdk import Small_LLM_Model
 import src.parser as parser
 import json
@@ -9,19 +10,22 @@ class Node:
     def __init__(self, i) -> None:
         self.i = i
         self.trans = {}
+
     def __repr__(self) -> str:
         return f"{self.trans}"
+
     def print(self):
         print(self.i)
+
+
 path = llm.get_path_to_vocab_file()
 
 with open(path) as file:
     loaded = json.load(file)
 
+
 dic = {}
 
-for key, value in loaded.items():
-    dic[llm.decode(value)] = value
 
 class Trie:
     def __init__(self, Parsed: parser.Parse):
@@ -29,21 +33,28 @@ class Trie:
         self.Functions = Parsed.functions
         self.state = 0
         self.states = []
+        self.allowed = []
+        self.vocab = {}
         self.trie = {}
         self.fixed_string = []
-        self.de = {}
         self.construct()
         self.insert_all()
-        self.i = 0
+
 
     def construct(self):
+        path = llm.get_path_to_vocab_file()
+        with open(path) as file:
+            loaded = json.load(file)
+        for key, value in loaded.items():
+            self.vocab[value] = key
+
         for x in self.Parsed.loaded:
-            params = {s : None for s in x["parameters"]}
+            params = {s: None for s in x["parameters"]}
             fix = '{"name": ' \
                   f'"{x["name"]}", '\
                   f'"parameters" : {params}'\
                   '}'
-            self.fixed_string.append(fix)
+            self.fixed_string.append(fix.replace(" ", "Ġ"))
 
     def add_state(self):
         i = len(self.states)
@@ -62,56 +73,53 @@ class Trie:
 
     def number_state(self, old_current):
         current = old_current
-        self.states[current].trans[llm.encode("-").tolist()[0][0]] = current
-        self.states[current].trans[dic["0"]] = current + 1
+        self.states[current].trans["-"] = current
+        self.states[current].trans["0"] = current + 1
         for d in "123456789":
-            self.states[current].trans[dic[d]] = current + 2
+            self.states[current].trans[d] = current + 2
         old_current = self.add_state()
-        self.states[old_current].trans[dic["0"]] = current + 1
+        self.states[old_current].trans["0"] = current + 1
         for d in "123456789":
-            self.states[old_current].trans[dic[d]] = current + 2
-        self.states[old_current].trans[llm.encode(".").tolist()[0][0]] = current + 3
-        self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 5
-        self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
+            self.states[old_current].trans[d] = current + 2
+        self.states[old_current].trans["."] = current + 3
+        self.states[old_current].trans[","] = current + 5
+        self.states[old_current].trans["}"] = float("-inf")
         old_current = self.add_state()
         for d in "0123456789":
-            self.states[old_current].trans[dic[d]] = current + 2
-        self.states[old_current].trans[llm.encode(".").tolist()[0][0]] = current + 3
-        self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 5
-        self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
+            self.states[old_current].trans[d] = current + 2
+        self.states[old_current].trans["."] = current + 3
+        self.states[old_current].trans[","] = current + 5
+        self.states[old_current].trans["}"] = float("-inf")
         old_current = self.add_state()
         for d in "0123456789":
-            self.states[old_current].trans[dic[d]] = current + 3
+            self.states[old_current].trans[d] = current + 3
         old_current = self.add_state()
         for d in "0123456789":
-            self.states[old_current].trans[dic[d]] = current + 4
-        self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 5
-        self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
+            self.states[old_current].trans[d] = current + 4
+        self.states[old_current].trans[","] = current + 5
+        self.states[old_current].trans["}"] = float("-inf")
         old_current = self.add_state()
         return old_current
 
     def string_state(self, current):
+        i = self.add_state()
+        a = self.add_state()
+        self.states[current].trans['"'] = i
+        self.states[i].trans['"'] = a
+        self.states[i].trans[None] = i
         old_current = current
-        self.states[old_current].trans[llm.encode('"').tolist()[0][0]] = current + 1
-        old_current = self.add_state()
-        self.states[old_current].trans[None] = old_current
-        #old_current = self.add_state()
-        #self.states[old_current].trans[llm.encode('"').tolist()[0][0]] = current + 3
-        #old_current = self.add_state()
-        #self.states[old_current].trans[llm.encode(",").tolist()[0][0]] = current + 4
-        #self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
-        #old_current = self.add_state()
-        #self.states[old_current].trans[llm.encode("}").tolist()[0][0]] = float("-inf")
         return old_current
+
+
 
     def states_creation(self):
         first = self.add_state()
-        name = self.add_to_path(llm.encode('{"name": ').tolist()[0], first)
+        name = self.add_to_path('{"name": '.replace(" ", "Ġ"), first)
         for x in self.Functions:
-            current = self.add_to_path(llm.encode(f'"{x.name}"').tolist()[0], name)
-            current = self.add_to_path(llm.encode(', "parameters": {').tolist()[0], current)
+            current = self.add_to_path(f'"{x.name}"'.replace(" ", "Ġ"), name)
+            current = self.add_to_path(', "parameters": {'.replace(" ", "Ġ"), current)
             for p in (x.parameters):
-                current = self.add_to_path(llm.encode(f'"{p}": ').tolist()[0], current)
+                current = self.add_to_path(f'"{p}": '.replace(" ", "Ġ"), current)
                 if x.parameters[p].type == "number":
                     current = self.number_state(current)
                 if x.parameters[p].type == "string":
@@ -121,10 +129,22 @@ class Trie:
         self.states_creation()
         for i in range(0, len(self.states)):
             self.trie[i] = self.states[i].trans
-            self.de[i] = {llm.decode(k): self.states[i].trans[k] for k in self.states[i].trans.keys() if k is not None}
 
+    def rehab(self, saved):
+        current = saved
+        valid = True
+        for ids ,token in self.vocab.items():
+            for x in token:
+                if x in self.trie[current]:
+                    current = self.trie[current][x]
+                else:
+                    valid = False
+                    break
+            if valid:
+                self.allowed.append((ids, current))
 
 tr = Trie(Parsed)
-for x in tr.trie:
-    #print(x,tr.trie[x])
-    print(x, tr.de[x])
+tr.rehab(0)
+print(tr.allowed)
+#for x in tr.trie:
+ #   print(x,tr.trie[x])
