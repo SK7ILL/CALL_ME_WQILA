@@ -45,7 +45,9 @@ class Trie:
         path = llm.get_path_to_vocab_file()
         with open(path) as file:
             loaded = json.load(file)
+
         for key, value in loaded.items():
+            print("value", value)
             self.vocab[value] = key
 
         for x in self.Parsed.loaded:
@@ -133,9 +135,9 @@ class Trie:
     def rehab(self, saved):
         current = saved
         valid = True
-        for ids ,token in self.vocab.items():
+        for ids , token in self.vocab.items():
             for x in token:
-                if x in self.trie[current]:
+                if x in self.trie[current].keys():
                     current = self.trie[current][x]
                 else:
                     valid = False
@@ -145,6 +147,6 @@ class Trie:
 
 tr = Trie(Parsed)
 tr.rehab(0)
-print(tr.allowed)
+#print(tr.allowed)
 #for x in tr.trie:
  #   print(x,tr.trie[x])
