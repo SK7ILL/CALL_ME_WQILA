@@ -1,4 +1,5 @@
 from pydantic import functional_serializers
+from rich import print
 from llm_sdk import Small_LLM_Model
 import src.parser as parser
 import json
@@ -47,7 +48,6 @@ class Trie:
             loaded = json.load(file)
 
         for key, value in loaded.items():
-            print("value", value)
             self.vocab[value] = key
 
         for x in self.Parsed.loaded:
@@ -107,12 +107,13 @@ class Trie:
         i = self.add_state()
         a = self.add_state()
         self.states[current].trans['"'] = i
-        self.states[i].trans['"'] = a
-        self.states[i].trans[None] = i
-        old_current = current
-        return old_current
-
-
+        self.states[i].trans[None] = a
+        #self.states[a].trans['"'] = a
+        #b = self.add_state()
+        #c = self.add_state()
+        #self.states[b].trans[','] = c
+        #self.states[b].trans['}'] = c
+        return i
 
     def states_creation(self):
         first = self.add_state()
@@ -126,27 +127,39 @@ class Trie:
                     current = self.number_state(current)
                 if x.parameters[p].type == "string":
                     current = self.string_state(current)
+                #if len(x.parameters) > 1:
+                #    g = self.add_state()
+                #    self.states[current].trans[","] = g
 
     def insert_all(self):
         self.states_creation()
         for i in range(0, len(self.states)):
             self.trie[i] = self.states[i].trans
 
+
+    def check_end(self, token: str):
+        return token.endswith('"') and token.startswith('"')
+
     def rehab(self, saved):
-        current = saved
-        valid = True
-        for ids , token in self.vocab.items():
-            for x in token:
-                if x in self.trie[current].keys():
+        allowed = {}
+        if self.trie[saved] is None:
+            return {None: saved}
+        for ids in self.vocab:
+            current = saved
+            valid = True
+            for x in self.vocab[ids]:
+                if x in self.trie[current]:
                     current = self.trie[current][x]
                 else:
                     valid = False
                     break
             if valid:
-                self.allowed.append((ids, current))
+                allowed[ids] = current
+        return allowed
+
 
 tr = Trie(Parsed)
-tr.rehab(0)
-#print(tr.allowed)
+print(tr.trie)
+
 #for x in tr.trie:
  #   print(x,tr.trie[x])
