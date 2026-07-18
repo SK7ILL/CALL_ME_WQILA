@@ -76,6 +76,7 @@ def generate_super1(Parsed: Parse):
 
 def mask_unwanted(logits, allowed_ids):
     if None in allowed_ids:
+        logits[497] = float("-inf")
         return logits
     for x in range(len(logits)):
         if x not in allowed_ids:
@@ -91,10 +92,15 @@ def encoded_func_names(names):
 
 
 print('\033[2J\033[H')
-
 with open("test.json", "w") as to_out:
     pass
 
+def append_tokens(lst, ids):
+    for x in lst:
+        ids.append(x)
+    return ids
+
+#print(dic.keys())
 Tr = Trie(Parsed)
 prompts = get_prompts()
 for prompt in prompts:
@@ -104,24 +110,25 @@ for prompt in prompts:
     super_id = s.encode(super_prompt).tolist()[0]
     pro_id = s.encode(prompt).tolist()[0]
     super_id = super_id + pro_id
-    n = True
-    none = ""
     while 1:
+        if next_state == float('-inf'):
+            break
         node = Tr.trie[next_state]
         mask = s.get_logits_from_input_ids(super_id)
         allowed_ids = Tr.rehab(next_state)
-        print(allowed_ids)
         mask = mask_unwanted(mask, allowed_ids.keys())
         next_t = mask.index(max(mask))
-        super_id.append(next_t)
         st = dic[next_t]
         if None not in allowed_ids:
             next_state = allowed_ids[next_t]
         else:
-            none += st
-            if Tr.check_end(none):
+            if '"' in st:
+                splited = st.split('"')
+                super_id = append_tokens(s.encode(splited[0]).tolist()[0], super_id)
                 next_state = Tr.trie[next_state][None]
-                none = ""
+        super_id.append(next_t)
         out += st
         print(st, end="", flush=True)
+        if next_state == float('-inf'):
+            break
     print()

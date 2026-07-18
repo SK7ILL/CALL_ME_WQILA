@@ -1,3 +1,4 @@
+from re import L
 from pydantic import functional_serializers
 from rich import print
 from llm_sdk import Small_LLM_Model
@@ -100,20 +101,25 @@ class Trie:
             self.states[old_current].trans[d] = current + 4
         self.states[old_current].trans[","] = current + 5
         self.states[old_current].trans["}"] = float("-inf")
-        old_current = self.add_state()
+        #old_current = self.add_state()
         return old_current
 
-    def string_state(self, current):
-        i = self.add_state()
+    def string_state(self, current, i, l):
+        b = self.add_state()
         a = self.add_state()
-        self.states[current].trans['"'] = i
-        self.states[i].trans[None] = a
-        #self.states[a].trans['"'] = a
-        #b = self.add_state()
-        #c = self.add_state()
-        #self.states[b].trans[','] = c
-        #self.states[b].trans['}'] = c
-        return i
+        d = self.add_state()
+        self.states[current].trans['"'] = b
+        self.states[b].trans[None] = a
+        self.states[a].trans['"'] = d
+        if i < l - 1:
+            c = self.add_state()
+            self.states[d].trans[','] = c
+            e = self.add_state()
+            self.states[c].trans[' '] = e
+            return e
+        else:
+            self.states[d].trans['}}'] = float("-inf")
+        return d
 
     def states_creation(self):
         first = self.add_state()
@@ -121,12 +127,12 @@ class Trie:
         for x in self.Functions:
             current = self.add_to_path(f'"{x.name}"'.replace(" ", "Ġ"), name)
             current = self.add_to_path(', "parameters": {'.replace(" ", "Ġ"), current)
-            for p in (x.parameters):
+            for i , p in enumerate(x.parameters):
                 current = self.add_to_path(f'"{p}": '.replace(" ", "Ġ"), current)
                 if x.parameters[p].type == "number":
                     current = self.number_state(current)
                 if x.parameters[p].type == "string":
-                    current = self.string_state(current)
+                    current = self.string_state(current, i, len(x.parameters))
                 #if len(x.parameters) > 1:
                 #    g = self.add_state()
                 #    self.states[current].trans[","] = g
@@ -138,11 +144,11 @@ class Trie:
 
 
     def check_end(self, token: str):
-        return token.endswith('"') and token.startswith('"')
+        return token.count('"') == 1
 
     def rehab(self, saved):
         allowed = {}
-        if self.trie[saved] is None:
+        if None in self.trie[saved]:
             return {None: saved}
         for ids in self.vocab:
             current = saved
