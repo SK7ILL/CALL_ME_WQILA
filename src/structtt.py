@@ -1,5 +1,4 @@
 from re import L
-from pydantic import functional_serializers
 from rich import print
 from llm_sdk import Small_LLM_Model
 import src.parser as parser
@@ -74,7 +73,7 @@ class Trie:
             current = i
         return current
 
-    def number_state(self, old_current):
+    def number_state(self, old_current, i, l):
         current = old_current
         self.states[current].trans["-"] = current
         self.states[current].trans["0"] = current + 1
@@ -85,24 +84,32 @@ class Trie:
         for d in "123456789":
             self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
-        self.states[old_current].trans[","] = current + 5
-        self.states[old_current].trans["}"] = float("-inf")
+        if i < l - 1:
+            self.states[old_current].trans[","] = current + 6
+#        self.states[old_current].trans["}"] = n
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
-        self.states[old_current].trans[","] = current + 5
-        self.states[old_current].trans["}"] = float("-inf")
+        if i < l - 1:
+            self.states[old_current].trans[","] = current + 6
+#        self.states[old_current].trans["}"] = n
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 3
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 4
-        self.states[old_current].trans[","] = current + 5
-        self.states[old_current].trans["}"] = float("-inf")
-        #old_current = self.add_state()
-        return old_current
+        if i < l - 1:
+            self.states[old_current].trans[","] = current + 6
+        n = self.add_state()
+        self.states[old_current].trans["}"] = n
+        self.states[current + 1].trans["}"] = n
+        self.states[current + 2].trans["}"] = n
+        m = self.add_state()
+        self.states[n].trans['}'] = m
+        self.states[m].trans['\n'] = float('-inf')
+        return m
 
     def string_state(self, current, i, l):
         b = self.add_state()
@@ -118,10 +125,12 @@ class Trie:
         else:
             p = self.add_state()
             k = self.add_state()
+            n = self.add_state()
             self.states[a].trans['"'] = p
             self.states[p].trans['}'] = k
-            self.states[k].trans['}'] = float('-inf')
-            return k
+            self.states[k].trans['}'] = n
+            self.states[n].trans['\n'] = float('-inf')
+            return n
 
     def states_creation(self):
         first = self.add_state()
@@ -132,7 +141,7 @@ class Trie:
             for i , p in enumerate(x.parameters):
                 current = self.add_to_path(f'"{p}": '.replace(" ", "Ġ"), current)
                 if x.parameters[p].type == "number":
-                    current = self.number_state(current)
+                    current = self.number_state(current, i, len(x.parameters))
                 if x.parameters[p].type == "string":
                     current = self.string_state(current, i, len(x.parameters))
                 #if len(x.parameters) > 1:

@@ -92,6 +92,7 @@ def encoded_func_names(names):
 
 
 print('\033[2J\033[H')
+
 with open("test.json", "w") as to_out:
     pass
 
@@ -118,18 +119,18 @@ for prompt in prompts:
             break
         mask = mask_unwanted(mask, allowed_ids.keys())
         next_t = mask.index(max(mask))
-        st = dic[next_t]
+        string = dic[next_t]
         if None not in allowed_ids:
             next_state = allowed_ids[next_t]
             super_id.append(next_t)
         else:
             if '"' in st:
-                splited = st.replace(" ", "Ġ").split('"')
+                splited = string.replace(" ", "Ġ").split('"')
                 mask = append_tokens(s.encode(splited[0]).tolist()[0], mask)
                 next_state = Tr.trie[next_state][None]
             else:
                 super_id.append(next_t)
-            out += st
+        out += string
+        print(string, end="", flush=True)
         if next_state == float('-inf'):
             break
-        print(st, end="", flush=True)
