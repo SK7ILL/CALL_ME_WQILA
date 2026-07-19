@@ -114,22 +114,22 @@ for prompt in prompts:
         node = Tr.trie[next_state]
         mask = s.get_logits_from_input_ids(super_id)
         allowed_ids = Tr.rehab(next_state)
+        if allowed_ids is None:
+            break
         mask = mask_unwanted(mask, allowed_ids.keys())
         next_t = mask.index(max(mask))
         st = dic[next_t]
-        if None in allowed_ids:
+        if None not in allowed_ids:
+            next_state = allowed_ids[next_t]
+            super_id.append(next_t)
+        else:
             if '"' in st:
-                splited = st.split('"')
-                super_id = append_tokens(s.encode(splited[0]).tolist()[0], super_id)
+                splited = st.replace(" ", "Ġ").split('"')
+                mask = append_tokens(s.encode(splited[0]).tolist()[0], mask)
                 next_state = Tr.trie[next_state][None]
-                allowed_ids = Tr.rehab(next_state)
-                mask = mask_unwanted(mask, allowed_ids.keys())
-                next_t = mask.index(max(mask))
-        out += st
-        st = dic[next_t]
-        next_state = allowed_ids[next_t]
-        super_id.append(next_t)
-        print(st, end="", flush=True)
+            else:
+                super_id.append(next_t)
+            out += st
         if next_state == float('-inf'):
             break
-    print()
+        print(st, end="", flush=True)

@@ -107,19 +107,21 @@ class Trie:
     def string_state(self, current, i, l):
         b = self.add_state()
         a = self.add_state()
-        d = self.add_state()
         self.states[current].trans['"'] = b
         self.states[b].trans[None] = a
-        self.states[a].trans['"'] = d
         if i < l - 1:
             c = self.add_state()
-            self.states[d].trans[','] = c
+            self.states[a].trans[','] = c
             e = self.add_state()
             self.states[c].trans[' '] = e
             return e
         else:
-            self.states[d].trans['}}'] = float("-inf")
-        return d
+            p = self.add_state()
+            k = self.add_state()
+            self.states[a].trans['"'] = p
+            self.states[p].trans['}'] = k
+            self.states[k].trans['}'] = float('-inf')
+            return k
 
     def states_creation(self):
         first = self.add_state()
@@ -152,8 +154,10 @@ class Trie:
             return {None: saved}
         for ids in self.vocab:
             current = saved
-            valid = True
+            valid = True 
             for x in self.vocab[ids]:
+                if current == float('-inf'):
+                    break
                 if x in self.trie[current]:
                     current = self.trie[current][x]
                 else:
