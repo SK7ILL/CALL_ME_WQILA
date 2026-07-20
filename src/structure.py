@@ -67,7 +67,7 @@ class Trie:
             current = i
         return current
 
-    def number_state(self, old_current, i, l):
+    def integer_state(self, old_current, i, l):
         current = old_current
         self.states[current].trans["-"] = current
         self.states[current].trans["0"] = current + 1
@@ -98,7 +98,18 @@ class Trie:
             self.states[m].trans['Ċ'] = float('-inf')
             return m
 
-    def float_state(self, old_current, i, l):
+    def bool_state(self, old_current, i, l):
+        current = old_current
+        old_current = self.add_state()
+        self.states[old_current].trans['"'] = current + 2
+        old_current = self.add_state()
+        self.states[old_current].trans[True] = current + 3
+        self.states[old_current].trans[False] = current + 3
+        old_current = self.add_state()
+        self.states[old_current].trans['"'] = current + 4
+        return  self.add_state()
+
+    def number_state(self, old_current, i, l):
         current = old_current
         self.states[current].trans["-"] = current
         self.states[current].trans["0"] = current + 1
@@ -168,12 +179,14 @@ class Trie:
             current = self.add_to_path(', "parameters": {'.replace(" ", "Ġ"), current)
             for i , p in enumerate(x.parameters):
                 current = self.add_to_path(f'"{p}": '.replace(" ", "Ġ"), current)
-                if x.parameters[p].type == "number":
-                    current = self.number_state(current, i, len(x.parameters))
+                if x.parameters[p].type == "integer":
+                    current = self.integer_state(current, i, len(x.parameters))
                 if x.parameters[p].type == "string":
                     current = self.string_state(current, i, len(x.parameters))
-                if x.parameters[p].type == "float":
-                    current = self.float_state(current, i, len(x.parameters))
+                if x.parameters[p].type == "number":
+                    current = self.number_state(current, i, len(x.parameters))
+                if x.parameters[p].type == "boolean":
+                    current = self.bool_state(current, i, len(x.parameters))
 
     def insert_all(self):
         self.states_creation()
