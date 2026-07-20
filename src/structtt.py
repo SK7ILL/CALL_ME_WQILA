@@ -85,14 +85,14 @@ class Trie:
             self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
         if i < l - 1:
-            self.states[old_current].trans[","] = current + 6
+            self.states[old_current].trans[","] = current + 5
 #        self.states[old_current].trans["}"] = n
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
         if i < l - 1:
-            self.states[old_current].trans[","] = current + 6
+            self.states[old_current].trans[","] = current + 5
 #        self.states[old_current].trans["}"] = n
         old_current = self.add_state()
         for d in "0123456789":
@@ -101,15 +101,18 @@ class Trie:
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 4
         if i < l - 1:
-            self.states[old_current].trans[","] = current + 6
-        n = self.add_state()
-        self.states[old_current].trans["}"] = n
-        self.states[current + 1].trans["}"] = n
-        self.states[current + 2].trans["}"] = n
-        m = self.add_state()
-        self.states[n].trans['}'] = m
-        self.states[m].trans['\n'] = float('-inf')
-        return m
+            self.states[old_current].trans[","] = current + 5
+            return self.add_state()
+        if i >= l - 1:
+            n = self.add_state()
+            self.states[old_current].trans["}"] = n
+            self.states[current + 1].trans["}"] = n
+            self.states[current + 2].trans["}"] = n
+            m = self.add_state()
+            self.states[n].trans['}'] = m
+            self.states[m].trans['Ċ'] = float('-inf')
+            return m
+        return old_current
 
     def string_state(self, current, i, l):
         b = self.add_state()
@@ -120,7 +123,7 @@ class Trie:
             c = self.add_state()
             self.states[a].trans[','] = c
             e = self.add_state()
-            self.states[c].trans[' '] = e
+            self.states[c].trans['Ġ'] = e
             return e
         else:
             p = self.add_state()
@@ -129,7 +132,7 @@ class Trie:
             self.states[a].trans['"'] = p
             self.states[p].trans['}'] = k
             self.states[k].trans['}'] = n
-            self.states[n].trans['\n'] = float('-inf')
+            self.states[n].trans['Ċ'] = float('-inf')
             return n
 
     def states_creation(self):
@@ -163,9 +166,11 @@ class Trie:
             return {None: saved}
         for ids in self.vocab:
             current = saved
-            valid = True 
+            valid = True
+            if current == float("-inf"):
+                break
             for x in self.vocab[ids]:
-                if current == float('-inf'):
+                if current == float("-inf"):
                     break
                 if x in self.trie[current]:
                     current = self.trie[current][x]
@@ -173,12 +178,15 @@ class Trie:
                     valid = False
                     break
             if valid:
-                allowed[ids] = current
+                if current == float("-inf"):
+                    allowed[ids] = float("-inf")
+                else:
+                    allowed[ids] = current
         return allowed
 
 
 tr = Trie(Parsed)
 print(tr.trie)
-
+tr.rehab(0)
 #for x in tr.trie:
  #   print(x,tr.trie[x])

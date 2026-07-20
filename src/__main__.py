@@ -76,7 +76,6 @@ def generate_super1(Parsed: Parse):
 
 def mask_unwanted(logits, allowed_ids):
     if None in allowed_ids:
-        logits[497] = float("-inf")
         return logits
     for x in range(len(logits)):
         if x not in allowed_ids:
@@ -91,7 +90,7 @@ def encoded_func_names(names):
     return lst
 
 
-print('\033[2J\033[H')
+#print('\033[2J\033[H')
 
 with open("test.json", "w") as to_out:
     pass
@@ -101,7 +100,9 @@ def append_tokens(lst, ids):
         ids.append(x)
     return ids
 
-#print(dic.keys())
+
+
+
 Tr = Trie(Parsed)
 prompts = get_prompts()
 for prompt in prompts:
@@ -124,10 +125,12 @@ for prompt in prompts:
             next_state = allowed_ids[next_t]
             super_id.append(next_t)
         else:
-            if '"' in st:
+            if '"' in string:
                 splited = string.replace(" ", "Ġ").split('"')
                 mask = append_tokens(s.encode(splited[0]).tolist()[0], mask)
                 next_state = Tr.trie[next_state][None]
+                next_t = mask.index(max(mask))
+                string = splited[0]
             else:
                 super_id.append(next_t)
         out += string
