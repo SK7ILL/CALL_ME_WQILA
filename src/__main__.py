@@ -1,4 +1,6 @@
 import json
+
+from pydantic import functional_serializers
 from llm_sdk import Small_LLM_Model
 from src.parser import Function, Parse
 from typing import List
@@ -12,6 +14,9 @@ class Call:
         self.path = self.llm.get_path_to_vocab_file()
         self.dic = {}
         self.own_dict()
+        self.Tr = Trie(Parsed)
+        self.is_backslach = False
+        self.json = []
 
     def format(self,Functions: List[Function]):
         to_return = []
@@ -77,12 +82,31 @@ class Call:
 
 
     def to_json(self, string):
-        with open("test.json", "a") as to_out:
-            fix = json.loads(string)
-            json.dump(fix, to_out, indent=4)
+        string = string.replace('\\', '\\\\')
+        fix = json.loads(string)
+        #json.dump(fix, to_out, indent=4)
+        self.json.append(fix)
+
+
+    def quotes_state(self, string):
+        flag = False
+        for i, x in enumerate(string):
+            if flag:
+                flag = False
+                continue
+            if x == '\\':
+                flag = True
+                continue
+            if x == '"':
+                return i
+        return -1
+
+    def write_to_json(self):
+        with open("test.json", "a") as f:
+            json.dump(self.json, f, indent=4)
+
 
     def main(self):
-        Tr = Trie(Parsed)
         prompts = self.get_prompts()
         super_prompt = self.generate_super(Parsed)
         super_id = s.encode(super_prompt).tolist()[0]
@@ -94,7 +118,7 @@ class Call:
             super_id = super_id + pro_id
             while 1:
                 mask = s.get_logits_from_input_ids(super_id)
-                allowed_ids = Tr.rehab(next_state)
+                allowed_ids = self.Tr.rehab(next_state)
                 if allowed_ids is None:
                     break
                 mask = self.mask_unwanted(mask, allowed_ids.keys())
@@ -104,12 +128,12 @@ class Call:
                     next_state = allowed_ids[next_t]
                     super_id.append(next_t)
                 else:
-                    if '"' in string and not '\\' in string:
-                        splited = string.replace(" ", "Ġ").split('"')
-                        mask = self.append_tokens(s.encode(splited[0]).tolist()[0], mask)
-                        next_state = Tr.trie[next_state][None]
-                        next_t = mask.index(max(mask))
-                        string = splited[0]
+                    if '"' in string:
+                        i = self.quotes_state(string)
+                        splited = string[:i]
+                        mask = self.append_tokens(self.llm.encode(splited).tolist()[0], mask)
+                        next_state = self.Tr.trie[next_state][None]
+                        string = splited
                     else:
                         super_id.append(next_t)
                 out += string
@@ -117,6 +141,7 @@ class Call:
                 if next_state == float('-inf'):
                     self.to_json(out)
                     break
+        self.write_to_json()
 
 s = Small_LLM_Model()
 Parsed = Parse()

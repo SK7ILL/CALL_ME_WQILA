@@ -143,8 +143,10 @@ class Trie:
         self.states[current].trans['"'] = b
         self.states[b].trans[None] = a
         if i < l - 1:
+            q = self.add_state()
+            self.states[a].trans['"'] = q
             c = self.add_state()
-            self.states[a].trans[','] = c
+            self.states[q].trans[','] = c
             e = self.add_state()
             self.states[c].trans['Ġ'] = e
             return e

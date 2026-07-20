@@ -1,0 +1,26 @@
+[
+    {
+        "name": "fn_substitute_string_with_regex",
+        "parameters": {
+            "source_string": "Hello 34 I'm 233 years old",
+            "regex": "(\\d+)",
+            "replacement": "NUMBERS"
+        }
+    },
+    {
+        "name": "fn_substitute_string_with_regex",
+        "parameters": {
+            "source_string": "Programming is fun",
+            "regex": "([aeiou])",
+            "replacement": "ASTERISK"
+        }
+    },
+    {
+        "name": "fn_substitute_string_with_regex",
+        "parameters": {
+            "source_string": "The cat sat on the mat with another cat",
+            "regex": "cat",
+            "replacement": "dog"
+        }
+    }
+]
