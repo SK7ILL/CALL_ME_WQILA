@@ -104,7 +104,7 @@ class Call:
                     next_state = allowed_ids[next_t]
                     super_id.append(next_t)
                 else:
-                    if '"' in string:
+                    if '"' in string and not '\\' in string:
                         splited = string.replace(" ", "Ġ").split('"')
                         mask = self.append_tokens(s.encode(splited[0]).tolist()[0], mask)
                         next_state = Tr.trie[next_state][None]

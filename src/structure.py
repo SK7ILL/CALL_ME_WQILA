@@ -19,14 +19,6 @@ class Node:
         print(self.i)
 
 
-path = llm.get_path_to_vocab_file()
-
-with open(path) as file:
-    loaded = json.load(file)
-
-
-dic = {}
-
 
 class Trie:
     def __init__(self, Parsed: parser.Parse):
@@ -178,17 +170,13 @@ class Trie:
                     current = self.number_state(current, i, len(x.parameters))
                 if x.parameters[p].type == "string":
                     current = self.string_state(current, i, len(x.parameters))
-                #if x.parameters[p].type == "float":
-                #    current = self.float_state(current, i, len(x.parameters))
+                if x.parameters[p].type == "float":
+                    current = self.float_state(current, i, len(x.parameters))
 
     def insert_all(self):
         self.states_creation()
         for i in range(0, len(self.states)):
             self.trie[i] = self.states[i].trans
-
-
-    def check_end(self, token: str):
-        return token.count('"') == 1
 
 
     def rehab(self, saved):

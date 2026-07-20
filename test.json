@@ -168,4 +168,46 @@
         "a": 2,
         "b": 3
     }
+}{
+    "name": "fn_add_numbers",
+    "parameters": {
+        "a": 2.0,
+        "b": 3.0
+    }
+}{
+    "name": "fn_add_numbers",
+    "parameters": {
+        "a": 265.0,
+        "b": 345.0
+    }
+}{
+    "name": "fn_greet",
+    "parameters": {
+        "name": "shrek"
+    }
+}{
+    "name": "fn_greet",
+    "parameters": {
+        "name": "john"
+    }
+}{
+    "name": "fn_reverse_string",
+    "parameters": {
+        "s": "hello"
+    }
+}{
+    "name": "fn_reverse_string",
+    "parameters": {
+        "s": "world"
+    }
+}{
+    "name": "fn_get_square_root",
+    "parameters": {
+        "a": 16.0
+    }
+}{
+    "name": "fn_get_square_root",
+    "parameters": {
+        "a": 144.0
+    }
 }
