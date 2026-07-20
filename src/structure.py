@@ -34,7 +34,9 @@ class Trie:
         self.Functions = Parsed.functions
         self.state = 0
         self.states = []
+        self.token_trans = {}
         self.allowed = []
+        self.cache = {}
         self.vocab = {}
         self.trie = {}
         self.fixed_string = []
@@ -83,17 +85,46 @@ class Trie:
         self.states[old_current].trans["0"] = current + 1
         for d in "123456789":
             self.states[old_current].trans[d] = current + 2
+        old_current = self.add_state()
+        for d in "0123456789":
+            self.states[old_current].trans[d] = current + 2
+        self.states[old_current].trans['.'] = current + 3
+        old_current = self.add_state()
+        self.states[old_current].trans['0'] = current + 4
+        if i < l - 1:
+            old_current = self.add_state()
+            self.states[old_current].trans[","] = current + 5
+            return self.add_state()
+        if i >= l - 1:
+            old_current = self.add_state()
+            n = self.add_state()
+            self.states[old_current].trans["}"] = n
+            self.states[current + 1].trans["}"] = n
+            #self.states[current + 2].trans["}"] = n
+            m = self.add_state()
+            self.states[n].trans['}'] = m
+            self.states[m].trans['Ċ'] = float('-inf')
+            return m
+
+    def float_state(self, old_current, i, l):
+        current = old_current
+        self.states[current].trans["-"] = current
+        self.states[current].trans["0"] = current + 1
+        for d in "123456789":
+            self.states[current].trans[d] = current + 2
+        old_current = self.add_state()
+        self.states[old_current].trans["0"] = current + 1
+        for d in "123456789":
+            self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
         if i < l - 1:
             self.states[old_current].trans[","] = current + 5
-#        self.states[old_current].trans["}"] = n
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
         if i < l - 1:
             self.states[old_current].trans[","] = current + 5
-#        self.states[old_current].trans["}"] = n
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 3
@@ -147,9 +178,8 @@ class Trie:
                     current = self.number_state(current, i, len(x.parameters))
                 if x.parameters[p].type == "string":
                     current = self.string_state(current, i, len(x.parameters))
-                #if len(x.parameters) > 1:
-                #    g = self.add_state()
-                #    self.states[current].trans[","] = g
+                #if x.parameters[p].type == "float":
+                #    current = self.float_state(current, i, len(x.parameters))
 
     def insert_all(self):
         self.states_creation()
@@ -160,8 +190,11 @@ class Trie:
     def check_end(self, token: str):
         return token.count('"') == 1
 
+
     def rehab(self, saved):
         allowed = {}
+        if saved in self.cache:
+            return self.cache[saved]
         if None in self.trie[saved]:
             return {None: saved}
         for ids in self.vocab:
@@ -182,11 +215,12 @@ class Trie:
                     allowed[ids] = float("-inf")
                 else:
                     allowed[ids] = current
+        self.cache[saved] = allowed
         return allowed
 
 
 tr = Trie(Parsed)
 print(tr.trie)
-tr.rehab(0)
+#tr.rehab(0)
 #for x in tr.trie:
  #   print(x,tr.trie[x])
