@@ -1,4 +1,3 @@
-from re import L
 from rich import print
 from llm_sdk import Small_LLM_Model
 import src.parser as parser
@@ -11,12 +10,6 @@ class Node:
     def __init__(self, i) -> None:
         self.i = i
         self.trans = {}
-
-    def __repr__(self) -> str:
-        return f"{self.trans}"
-
-    def print(self):
-        print(self.i)
 
 
 
@@ -69,35 +62,33 @@ class Trie:
 
     def integer_state(self, old_current, i, l):
         current = old_current
-        self.states[current].trans["-"] = current
-        self.states[current].trans["0"] = current + 1
+        self.states[current].trans["-"] = current + 1
+        self.states[current].trans["0"] = current + 3 
         for d in "123456789":
             self.states[current].trans[d] = current + 2
         old_current = self.add_state()
-        self.states[old_current].trans["0"] = current + 1
         for d in "123456789":
             self.states[old_current].trans[d] = current + 2
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 2
-        self.states[old_current].trans['.'] = current + 3
-        old_current = self.add_state()
-        self.states[old_current].trans['0'] = current + 4
         if i < l - 1:
+            self.states[old_current].trans[" "] = current + 3
+            self.states[old_current].trans[","] = current + 4
             old_current = self.add_state()
-            self.states[old_current].trans[","] = current + 5
+            self.states[old_current].trans[","] = current + 4
             return self.add_state()
         if i >= l - 1:
             old_current = self.add_state()
             n = self.add_state()
-            self.states[old_current].trans["}"] = n
-            self.states[current + 1].trans["}"] = n
+            self.states[current + 2].trans["}"] = current + 4
+            self.states[current + 3].trans["}"] = current + 4
             #self.states[current + 2].trans["}"] = n
             m = self.add_state()
             self.states[n].trans['}'] = m
             self.states[m].trans['Ċ'] = float('-inf')
             return m
-
+        
     def bool_state(self, old_current, i, l):
         current = old_current
         old_current = self.add_state()
@@ -130,7 +121,7 @@ class Trie:
             self.states[old_current].trans[","] = current + 5
         old_current = self.add_state()
         for d in "0123456789":
-            self.states[old_current].trans[d] = current + 3
+            self.states[old_current].trans[d] = current + 4
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 4

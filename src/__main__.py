@@ -109,12 +109,12 @@ class Call:
     def main(self):
         prompts = self.get_prompts()
         super_prompt = self.generate_super(Parsed)
-        super_id = s.encode(super_prompt).tolist()[0]
         print('\033[2J\033[H')
         for prompt in prompts:
             next_state = 0
             out = ""
             pro_id = s.encode(prompt).tolist()[0]
+            super_id = s.encode(super_prompt).tolist()[0]
             super_id = super_id + pro_id
             while 1:
                 mask = s.get_logits_from_input_ids(super_id)
