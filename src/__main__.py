@@ -135,7 +135,7 @@ class Call:
                         splited = string[:i]
                         mask = self.append_tokens(self.llm.encode(splited).tolist()[0], mask)
                         next_state = self.Tr.trie[next_state][None]
-                        string = splited
+                        string = splited.replace('"', '\\"')
                     else:
                         super_id.append(next_t)
                 out += string
