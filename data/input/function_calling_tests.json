@@ -1,11 +1,5 @@
 [
   {
-    "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding"
-  },
-  {
-    "prompt": "Format template: Hello {user}'s profile!"
-  },
-  {
     "prompt": "Format template: Say \"hello\" to {name}"
   }
 ]

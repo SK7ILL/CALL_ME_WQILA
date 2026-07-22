@@ -84,7 +84,7 @@ class Call:
     def to_json(self, string):
         string = string.replace('\\', '\\\\')
         fix = json.loads(string)
-        #json.dump(fix, to_out, indent=4)
+        print(fix)
         self.json.append(fix)
 
 
@@ -112,6 +112,7 @@ class Call:
         print('\033[2J\033[H')
         for prompt in prompts:
             next_state = 0
+            prompt = prompt.replace('"', '\\"')
             out = '{"prompt": ' + f'"{prompt}" ,'
             print(out, end="", flush=True)
             pro_id = s.encode(prompt).tolist()[0]
