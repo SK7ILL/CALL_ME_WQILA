@@ -79,7 +79,6 @@ class Trie:
             self.states[old_current].trans[","] = current + 4
             return self.add_state()
         if i >= l - 1:
-            old_current = self.add_state()
             n = self.add_state()
             self.states[current + 2].trans["}"] = current + 4
             self.states[current + 3].trans["}"] = current + 4
@@ -164,7 +163,7 @@ class Trie:
 
     def states_creation(self):
         first = self.add_state()
-        name = self.add_to_path('{"name": '.replace(" ", "Ġ"), first)
+        name = self.add_to_path('"name": '.replace(" ", "Ġ"), first)
         for x in self.Functions:
             current = self.add_to_path(f'"{x.name}"'.replace(" ", "Ġ"), name)
             current = self.add_to_path(', "parameters": {'.replace(" ", "Ġ"), current)

@@ -1,76 +1,62 @@
 [
     {
-        "name": "fn_add_numbers",
+        "name": "fn_is_even",
         "parameters": {
-            "a": 2.0,
-            "b": 3.0
+            "n": 4
         }
     },
     {
-        "name": "fn_add_numbers",
+        "name": "fn_is_even",
         "parameters": {
-            "a": 265.0,
-            "b": 345.0
+            "n": 7
         }
     },
     {
-        "name": "fn_greet",
+        "name": "fn_calculate_compound_interest",
         "parameters": {
-            "name": "shrek"
+            "principal": 1234567.89,
+            "rate": 0.0375,
+            "years": 23
         }
     },
     {
-        "name": "fn_greet",
+        "name": "fn_execute_sql_query",
         "parameters": {
-            "name": "john"
+            "query": "SELECT * FROM users",
+            "database": "production"
         }
     },
     {
-        "name": "fn_reverse_string",
+        "name": "fn_execute_sql_query",
         "parameters": {
-            "s": "hello"
+            "query": "INSERT INTO logs VALUES (1, 2, 3)",
+            "database": "system"
         }
     },
     {
-        "name": "fn_reverse_string",
+        "name": "fn_read_file",
         "parameters": {
-            "s": "world"
+            "path": " /home/user/data.json",
+            "encoding": "utf-8"
         }
     },
     {
-        "name": "fn_get_square_root",
+        "name": "fn_read_file",
         "parameters": {
-            "a": 16.0
+            "path": "C:\\\\Users\\\\john\\\\config.ini",
+            "encoding": "latin-1"
         }
     },
     {
-        "name": "fn_get_square_root",
+        "name": "fn_format_template",
         "parameters": {
-            "a": 144.0
+            "template": "Hello {user}'s profile!"
         }
     },
     {
-        "name": "fn_substitute_string_with_regex",
+        "name": "fn_format_template",
         "parameters": {
-            "source_string": "Hello 34 I'm 233 years old",
-            "regex": "([0-9]+)",
-            "replacement": "NUMBERS"
-        }
-    },
-    {
-        "name": "fn_substitute_string_with_regex",
-        "parameters": {
-            "source_string": "Programming is fun",
-            "regex": "([aeiou])",
-            "replacement": "asterisk"
-        }
-    },
-    {
-        "name": "fn_substitute_string_with_regex",
-        "parameters": {
-            "source_string": "The cat sat on the mat with another cat",
-            "regex": "cat",
-            "replacement": "dog"
+            "template": "Say \\"
         }
     }
 ][

@@ -8,7 +8,7 @@ from src.structure import Trie
 
 
 class Call:
-    def __init__(self, Parsed, llm):
+    def __init__(self, Parsed: Parse, llm):
         self.Parsed = Parsed
         self.llm = llm
         self.path = self.llm.get_path_to_vocab_file()
@@ -102,7 +102,7 @@ class Call:
         return -1
 
     def write_to_json(self):
-        with open("test.json", "a") as f:
+        with open(self.Parsed.arg.output, "w") as f:
             json.dump(self.json, f, indent=4)
 
 
@@ -112,7 +112,8 @@ class Call:
         print('\033[2J\033[H')
         for prompt in prompts:
             next_state = 0
-            out = ""
+            out = '{"prompt": ' + f'"{prompt}" ,'
+            print(out, end="", flush=True)
             pro_id = s.encode(prompt).tolist()[0]
             super_id = s.encode(super_prompt).tolist()[0]
             super_id = super_id + pro_id
