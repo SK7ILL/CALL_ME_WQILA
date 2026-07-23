@@ -1,0 +1,9 @@
+[
+    {
+        "name": "fn_format_template",
+        "parameters": {
+            "template": "hello, {name}, goodbye!"
+        },
+        "prompt": "Format template: Say \"hello\" to {name}"
+    }
+]

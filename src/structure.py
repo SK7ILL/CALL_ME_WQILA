@@ -80,14 +80,14 @@ class Trie:
             return self.add_state()
         if i >= l - 1:
             n = self.add_state()
-            self.states[current + 2].trans["}"] = current + 4
+            self.states[current + 2].trans["}"] = current + 3
             self.states[current + 3].trans["}"] = current + 4
             #self.states[current + 2].trans["}"] = n
             m = self.add_state()
             self.states[n].trans['}'] = m
             self.states[m].trans['Ċ'] = float('-inf')
             return m
-        
+
     def bool_state(self, old_current, i, l):
         current = old_current
         old_current = self.add_state()
@@ -97,7 +97,7 @@ class Trie:
         self.states[old_current].trans[False] = current + 3
         old_current = self.add_state()
         self.states[old_current].trans['"'] = current + 4
-        return  self.add_state()
+        return self.add_state()
 
     def number_state(self, old_current, i, l):
         current = old_current
@@ -163,7 +163,7 @@ class Trie:
 
     def states_creation(self):
         first = self.add_state()
-        name = self.add_to_path('"name": '.replace(" ", "Ġ"), first)
+        name = self.add_to_path('{"name": '.replace(" ", "Ġ"), first)
         for x in self.Functions:
             current = self.add_to_path(f'"{x.name}"'.replace(" ", "Ġ"), name)
             current = self.add_to_path(', "parameters": {'.replace(" ", "Ġ"), current)

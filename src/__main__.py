@@ -56,12 +56,12 @@ class Call:
     def generate_super1(self, Parsed: Parse):
 
         func = format(Parsed.functions)
-        prompt = "<|system|> You are an AI function caller."\
-                "Generate ONLY a JSON object."\
-                "Use only the provided functions."\
-                "No explaination, No extra talk"\
-                "Allowed Functions:"\
-                f"{func}"\
+        prompt = ("<|system|>"
+                "You convert user requests into function calls. "
+                "Return exactly one valid JSON object describing the best matching function call. "
+                "Use only the provided functions and their parameter schema. "
+                "Do not generate any other text."
+                  f"The allowed Function: {func}")
 
         return prompt
 
@@ -81,12 +81,15 @@ class Call:
         return ids
 
 
-    def to_json(self, string):
-        string = string.replace('\\', '\\\\')
+    def to_json(self, string, prompt):
+        string = string.replace('"', '\"')
         fix = json.loads(string)
-        print(fix)
+        fix["prompt"] = prompt
         self.json.append(fix)
 
+    def print_prompt(self, prompt):
+        print("-" * 40)
+        print(f"PROMPT: {prompt}")
 
     def quotes_state(self, string):
         flag = False
@@ -111,10 +114,9 @@ class Call:
         super_prompt = self.generate_super(Parsed)
         print('\033[2J\033[H')
         for prompt in prompts:
+            self.print_prompt(prompt)
             next_state = 0
-            prompt = prompt.replace('"', '\\"')
-            out = '{"prompt": ' + f'"{prompt}" ,'
-            print(out, end="", flush=True)
+            out = ""
             pro_id = s.encode(prompt).tolist()[0]
             super_id = s.encode(super_prompt).tolist()[0]
             super_id = super_id + pro_id
@@ -135,13 +137,13 @@ class Call:
                         splited = string[:i]
                         mask = self.append_tokens(self.llm.encode(splited).tolist()[0], mask)
                         next_state = self.Tr.trie[next_state][None]
-                        string = splited.replace('"', '\\"')
+                        string = splited
                     else:
                         super_id.append(next_t)
                 out += string
                 print(string, end="", flush=True)
                 if next_state == float('-inf'):
-                    self.to_json(out)
+                    self.to_json(out, prompt)
                     break
         self.write_to_json()
 
