@@ -2,16 +2,16 @@
     {
         "name": "fn_multiply_numbers",
         "parameters": {
-            "a": 3,
-            "b": 5
+            "a": 3.0,
+            "b": 5.0
         },
         "prompt": "What is the product of 3 and 5?"
     },
     {
         "name": "fn_multiply_numbers",
         "parameters": {
-            "a": 12,
-            "b": 4
+            "a": 12.0,
+            "b": 4.0
         },
         "prompt": "What is the product of 12 and 4?"
     },
@@ -39,10 +39,10 @@
         "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years"
     },
     {
-        "name": "fn_read_file",
+        "name": "fn_execute_sql_query",
         "parameters": {
-            "path": "users.csv",
-            "encoding": "utf-8"
+            "query": "SELECT * FROM users",
+            "database": "production"
         },
         "prompt": "Execute SQL query 'SELECT * FROM users' on the production database"
     },
@@ -57,7 +57,7 @@
     {
         "name": "fn_read_file",
         "parameters": {
-            "path": "data.json",
+            "path": " /home/user/data.json",
             "encoding": "utf-8"
         },
         "prompt": "Read the file at /home/user/data.json with utf-8 encoding"
@@ -71,17 +71,16 @@
         "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding"
     },
     {
-        "name": "fn_read_file",
+        "name": "fn_format_template",
         "parameters": {
-            "path": "profile.txt",
-            "encoding": "utf-8"
+            "template": "Hello {user}'s profile!"
         },
         "prompt": "Format template: Hello {user}'s profile!"
     },
     {
         "name": "fn_format_template",
         "parameters": {
-            "template": "Hello, {name}!"
+            "template": "Say hello to {name}"
         },
         "prompt": "Format template: Say \"hello\" to {name}"
     }

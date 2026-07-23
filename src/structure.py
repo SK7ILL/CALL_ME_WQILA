@@ -104,14 +104,14 @@ class Trie:
         self.states[current].trans["-"] = current
         self.states[current].trans["0"] = current + 1
         for d in "123456789":
-            self.states[current].trans[d] = current + 2
+            self.states[current].trans[d] = current + 1
         old_current = self.add_state()
         self.states[old_current].trans["0"] = current + 1
         for d in "123456789":
             self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
-        if i < l - 1:
-            self.states[old_current].trans[","] = current + 5
+        #if i < l - 1:
+        #    self.states[old_current].trans[","] = current + 5
         old_current = self.add_state()
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 2
@@ -131,7 +131,7 @@ class Trie:
             n = self.add_state()
             self.states[old_current].trans["}"] = n
             self.states[current + 1].trans["}"] = n
-            self.states[current + 2].trans["}"] = n
+            #self.states[current + 2].trans["}"] = n
             m = self.add_state()
             self.states[n].trans['}'] = m
             self.states[m].trans['Ċ'] = float('-inf')

@@ -82,7 +82,7 @@ class Call:
 
 
     def to_json(self, string, prompt):
-        string = string.replace('"', '\"')
+        #string = string.replace('"', '\"')
         fix = json.loads(string)
         fix["prompt"] = prompt
         self.json.append(fix)
@@ -112,13 +112,13 @@ class Call:
     def main(self):
         prompts = self.get_prompts()
         super_prompt = self.generate_super(Parsed)
+        super_id = s.encode(super_prompt).tolist()[0]
         print('\033[2J\033[H')
         for prompt in prompts:
             self.print_prompt(prompt)
             next_state = 0
             out = ""
             pro_id = s.encode(prompt).tolist()[0]
-            super_id = s.encode(super_prompt).tolist()[0]
             super_id = super_id + pro_id
             while 1:
                 mask = s.get_logits_from_input_ids(super_id)
