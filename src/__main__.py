@@ -1,6 +1,5 @@
 import json
-
-from pydantic import functional_serializers
+from os import wait
 from llm_sdk import Small_LLM_Model
 from src.parser import Function, Parse
 from typing import List
@@ -20,20 +19,35 @@ class Call:
 
     def format(self,Functions: List[Function]):
         to_return = []
-        for x in Functions:
-            returned = f"{x.name} ({x.parameters}) - {x.description}"
+        for x in (Functions):
+            returned = f"{x.name}: {x.description} - ({self.format_params(x.parameters, len(x.parameters))}) "
             to_return.append(returned)
         return to_return
+
+    def format_params(self, params, l):
+        string = ""
+        for i, x in enumerate(params):
+            string += f"{x}: {params[x].type}"
+            if i < l - 1:
+                string += ", "
+        return string
 
     def generate_super(self, Parsed):
         func = self.format(Parsed.functions)
         prompt = f"""<|system|>
-            You are a function selector.
-            Choose the single best function and infer the parameter values.
-            Functions:
+            Return one JSON function call.
+            Output format:
+            {{"name":"...","parameters":{{...}}}}
+            Rules:
+            - String parameters must be copied EXACTLY from the user's request.
+            - Do not add, remove, or modify any characters.
+            - Do not complete templates.
+            - Do not infer missing placeholders.
+            - Preserve the original text exactly.
+            Choose ONLY from:
             {func}
-            User:
-            """
+            <|user|>
+            """        
         return prompt
 
     def get_prompts(self):
@@ -53,19 +67,6 @@ class Call:
         for _, value in loaded.items():
             self.dic[value] = s.decode(value)
 
-    def generate_super1(self, Parsed: Parse):
-
-        func = format(Parsed.functions)
-        prompt = ("<|system|>"
-                "You convert user requests into function calls. "
-                "Return exactly one valid JSON object describing the best matching function call. "
-                "Use only the provided functions and their parameter schema. "
-                "Do not generate any other text."
-                  f"The allowed Function: {func}")
-
-        return prompt
-
-
     def mask_unwanted(self, logits, allowed_ids):
         if None in allowed_ids:
             return logits
@@ -74,15 +75,13 @@ class Call:
                 logits[x] = float("-inf")
         return logits
 
-
     def append_tokens(self, lst, ids):
         for x in lst:
             ids.append(x)
         return ids
 
-
     def to_json(self, string, prompt):
-        #string = string.replace('"', '\"')
+        string = string.replace('\\', '\\\\')
         fix = json.loads(string)
         fix["prompt"] = prompt
         self.json.append(fix)
@@ -132,7 +131,7 @@ class Call:
                     next_state = allowed_ids[next_t]
                     super_id.append(next_t)
                 else:
-                    if '"' in string:
+                    if '"' in string and '\\"' not in string:
                         i = self.quotes_state(string)
                         splited = string[:i]
                         mask = self.append_tokens(self.llm.encode(splited).tolist()[0], mask)
