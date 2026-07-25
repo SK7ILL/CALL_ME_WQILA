@@ -116,16 +116,16 @@ class Trie:
         for d in "0123456789":
             self.states[old_current].trans[d] = current + 2
         self.states[old_current].trans["."] = current + 3
-        if i < l - 1:
-            self.states[old_current].trans[","] = current + 5
+        #if i < l - 1:
+        #    self.states[old_current].trans[","] = current + 5
+        #old_current = self.add_state()
+        #for d in "0123456789":
+        #    self.states[old_current].trans[d] = current + 4
         old_current = self.add_state()
         for d in "0123456789":
-            self.states[old_current].trans[d] = current + 4
-        old_current = self.add_state()
-        for d in "0123456789":
-            self.states[old_current].trans[d] = current + 4
+            self.states[old_current].trans[d] = current + 3
         if i < l - 1:
-            self.states[old_current].trans[","] = current + 5
+            self.states[old_current].trans[","] = current + 4
             return self.add_state()
         if i >= l - 1:
             n = self.add_state()

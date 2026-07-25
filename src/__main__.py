@@ -34,14 +34,13 @@ class Call:
 
     def generate_super(self, Parsed):
         functions = self.format(Parsed.functions)
-        prompt =  (
-                            "<|system|>"
-                            "You convert user requests into function calls. "
-                            "Return exactly one valid JSON object describing the best matching function call. "
-                            "Use only the provided functions and their parameter schema. "
-                            "Do not generate any other text."
-                            f"Chose From these function only: {functions}"
-            ) 
+        prompt = (f"""You are a precise assistant that outputs structured data only.
+                    Respond with valid JSON matching the required schema. Do not include any text, 
+                    explanation, or formatting outside the JSON object. Do not use markdown code 
+                    blocks. 
+                    here are the allowed function : {functions}"
+                    """
+                    ) 
         return prompt
 
     def get_prompts(self):
@@ -106,10 +105,10 @@ class Call:
     def main(self):
         prompts = self.get_prompts()
         super_prompt = self.generate_super(Parsed)
-        base_id = s.encode(super_prompt).tolist()[0]
         print('\033[2J\033[H')
+        base_id = s.encode(super_prompt).tolist()[0]
         for prompt in prompts:
-            #self.print_prompt(prompt)
+            self.print_prompt(prompt)
             next_state = 0
             out = ""
             pro_id = s.encode(prompt).tolist()[0]
@@ -129,7 +128,7 @@ class Call:
                     if '"' in string:
                         i = self.quotes_state(string)
                         splited = string[:i]
-                        mask = self.append_tokens(self.llm.encode(splited).tolist()[0], mask)
+                        super_id = self.append_tokens(self.llm.encode(splited).tolist()[0], super_id)
                         next_state = self.Tr.trie[next_state][None]
                         string = splited
                     else:

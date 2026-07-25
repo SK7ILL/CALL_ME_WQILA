@@ -30,10 +30,11 @@
         "prompt": "Is 7 an even number?"
     },
     {
-        "name": "fn_execute_sql_query",
+        "name": "fn_calculate_compound_interest",
         "parameters": {
-            "query": "SELECT * FROM users WHERE id = 1234567.89 AND rate = 0.0375 AND years = 23",
-            "database": "users_db"
+            "principal": 1234567.89,
+            "rate": 0.0375,
+            "years": 23
         },
         "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years"
     },
@@ -56,7 +57,7 @@
     {
         "name": "fn_read_file",
         "parameters": {
-            "path": " /home/user/data.json",
+            "path": "data.json",
             "encoding": "utf-8"
         },
         "prompt": "Read the file at /home/user/data.json with utf-8 encoding"
@@ -77,9 +78,10 @@
         "prompt": "Format template: Hello {user}'s profile!"
     },
     {
-        "name": "fn_format_template",
+        "name": "fn_read_file",
         "parameters": {
-            "template": "Hello, {name}!"
+            "path": "path/to/file",
+            "encoding": "utf-8"
         },
         "prompt": "Format template: Say \"hello\" to {name}"
     }
