@@ -17,7 +17,7 @@ class Call:
         self.is_backslach = False
         self.json = []
 
-    def format(self,Functions: List[Function]):
+    def format(self, Functions: List[Function]):
         to_return = []
         for x in (Functions):
             returned = f"{x.name}: {x.description} - ({self.format_params(x.parameters, len(x.parameters))}) "
@@ -34,19 +34,14 @@ class Call:
 
     def generate_super(self, Parsed):
         functions = self.format(Parsed.functions)
-        prompt = (
-                "<|system|>\n"
-                "You are a function calling assistant.\n"
-                "Your task is to convert the user's request into EXACTLY ONE function call.\n"
-                "Use ONLY the provided functions.\n"
-                "Do NOT invent function names.\n"
-                "Do NOT invent parameter names.\n"
-                "Copy all string parameters EXACTLY as they appear in the user's request.\n"
-                "Do NOT modify, complete, rewrite, or improve any user text.\n"
-                "Do NOT add placeholders, words, or values.\n"
-                "Return ONLY a valid JSON object in this format:\n"
-                f"Function Allowed: {functions}"
-                )
+        prompt =  (
+                            "<|system|>"
+                            "You convert user requests into function calls. "
+                            "Return exactly one valid JSON object describing the best matching function call. "
+                            "Use only the provided functions and their parameter schema. "
+                            "Do not generate any other text."
+                            f"Chose From these function only: {functions}"
+            ) 
         return prompt
 
     def get_prompts(self):
@@ -67,6 +62,7 @@ class Call:
             self.dic[value] = s.decode(value)
 
     def mask_unwanted(self, logits, allowed_ids):
+        allowed_ids = set(allowed_ids)
         if None in allowed_ids:
             return logits
         for x in range(len(logits)):
@@ -110,14 +106,14 @@ class Call:
     def main(self):
         prompts = self.get_prompts()
         super_prompt = self.generate_super(Parsed)
+        base_id = s.encode(super_prompt).tolist()[0]
         print('\033[2J\033[H')
         for prompt in prompts:
-            self.print_prompt(prompt)
+            #self.print_prompt(prompt)
             next_state = 0
             out = ""
-            super_id = s.encode(super_prompt).tolist()[0]
             pro_id = s.encode(prompt).tolist()[0]
-            super_id = super_id + pro_id
+            super_id = base_id + pro_id
             while 1:
                 mask = s.get_logits_from_input_ids(super_id)
                 allowed_ids = self.Tr.rehab(next_state)
@@ -130,7 +126,7 @@ class Call:
                     next_state = allowed_ids[next_t]
                     super_id.append(next_t)
                 else:
-                    if '"' in string and '\\"' not in string:
+                    if '"' in string:
                         i = self.quotes_state(string)
                         splited = string[:i]
                         mask = self.append_tokens(self.llm.encode(splited).tolist()[0], mask)

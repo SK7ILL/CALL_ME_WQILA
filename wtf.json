@@ -10,8 +10,8 @@
     {
         "name": "fn_multiply_numbers",
         "parameters": {
-            "a": 12.0,
-            "b": 4.0
+            "a": 12,
+            "b": 4
         },
         "prompt": "What is the product of 12 and 4?"
     },
@@ -30,11 +30,10 @@
         "prompt": "Is 7 an even number?"
     },
     {
-        "name": "fn_calculate_compound_interest",
+        "name": "fn_execute_sql_query",
         "parameters": {
-            "principal": 1234567.89,
-            "rate": 0.0375,
-            "years": 23
+            "query": "SELECT * FROM users WHERE id = 1234567.89 AND rate = 0.0375 AND years = 23",
+            "database": "users_db"
         },
         "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years"
     },
@@ -80,7 +79,7 @@
     {
         "name": "fn_format_template",
         "parameters": {
-            "template": "Say hello to {name}"
+            "template": "Hello, {name}!"
         },
         "prompt": "Format template: Say \"hello\" to {name}"
     }

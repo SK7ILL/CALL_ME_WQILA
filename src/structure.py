@@ -186,8 +186,8 @@ class Trie:
 
     def rehab(self, saved):
         allowed = {}
-        if saved in self.cache:
-            return self.cache[saved]
+        #if saved in self.cache:
+        #    return self.cache[saved]
         if None in self.trie[saved]:
             return {None: saved}
         for ids in self.vocab:
