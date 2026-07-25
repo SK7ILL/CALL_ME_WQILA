@@ -10,8 +10,8 @@
     {
         "name": "fn_multiply_numbers",
         "parameters": {
-            "a": 12.0,
-            "b": 4.0
+            "a": 12,
+            "b": 4
         },
         "prompt": "What is the product of 12 and 4?"
     },
@@ -30,11 +30,10 @@
         "prompt": "Is 7 an even number?"
     },
     {
-        "name": "fn_calculate_compound_interest",
+        "name": "fn_execute_sql_query",
         "parameters": {
-            "principal": 1234567.89,
-            "rate": 0.0375,
-            "years": 23
+            "query": "SELECT * FROM users WHERE id = 1234567.89 AND rate = 0.0375 AND years = 23",
+            "database": "users_db"
         },
         "prompt": "Calculate compound interest on 1234567.89 at 0.0375 rate for 23 years"
     },
@@ -57,7 +56,7 @@
     {
         "name": "fn_read_file",
         "parameters": {
-            "path": "data.json",
+            "path": " /home/user/data.json",
             "encoding": "utf-8"
         },
         "prompt": "Read the file at /home/user/data.json with utf-8 encoding"
@@ -65,7 +64,7 @@
     {
         "name": "fn_read_file",
         "parameters": {
-            "path": "config.ini",
+            "path": "C:\\Users\\john\\config.ini",
             "encoding": "latin-1"
         },
         "prompt": "Read C:\\Users\\john\\config.ini with latin-1 encoding"
@@ -80,7 +79,7 @@
     {
         "name": "fn_format_template",
         "parameters": {
-            "template": "Say \"hello\" to {name}"
+            "template": "Hello, {name}!"
         },
         "prompt": "Format template: Say \"hello\" to {name}"
     }

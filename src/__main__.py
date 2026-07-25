@@ -33,26 +33,25 @@ class Call:
         return string
 
     def generate_super(self, Parsed):
-        func = self.format(Parsed.functions)
-        prompt = f"""<|system|>
-            Return one JSON function call.
-            Output format:
-            {{"name":"...","parameters":{{...}}}}
-            Rules:
-            - String parameters must be copied EXACTLY from the user's request.
-            - Do not add, remove, or modify any characters.
-            - Do not complete templates.
-            - Do not infer missing placeholders.
-            - Preserve the original text exactly.
-            Choose ONLY from:
-            {func}
-            <|user|>
-            """        
+        functions = self.format(Parsed.functions)
+        prompt = (
+                "<|system|>\n"
+                "You are a function calling assistant.\n"
+                "Your task is to convert the user's request into EXACTLY ONE function call.\n"
+                "Use ONLY the provided functions.\n"
+                "Do NOT invent function names.\n"
+                "Do NOT invent parameter names.\n"
+                "Copy all string parameters EXACTLY as they appear in the user's request.\n"
+                "Do NOT modify, complete, rewrite, or improve any user text.\n"
+                "Do NOT add placeholders, words, or values.\n"
+                "Return ONLY a valid JSON object in this format:\n"
+                f"Function Allowed: {functions}"
+                )
         return prompt
 
     def get_prompts(self):
         loaded = []
-        with open("data/input/function_calling_tests.json") as file:
+        with open(self.Parsed.arg.input) as file:
             loaded = json.load(file)
         prompts: List[str] = []
         for x in loaded:
@@ -81,7 +80,7 @@ class Call:
         return ids
 
     def to_json(self, string, prompt):
-        string = string.replace('\\', '\\\\')
+        #string = string.replace('\\', '\\\\')
         fix = json.loads(string)
         fix["prompt"] = prompt
         self.json.append(fix)
@@ -111,12 +110,12 @@ class Call:
     def main(self):
         prompts = self.get_prompts()
         super_prompt = self.generate_super(Parsed)
-        super_id = s.encode(super_prompt).tolist()[0]
         print('\033[2J\033[H')
         for prompt in prompts:
             self.print_prompt(prompt)
             next_state = 0
             out = ""
+            super_id = s.encode(super_prompt).tolist()[0]
             pro_id = s.encode(prompt).tolist()[0]
             super_id = super_id + pro_id
             while 1:
