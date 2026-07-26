@@ -198,36 +198,41 @@ class Trie:
             The id of the state reached after the number (and any
             following separator) is fully consumed.
         """
+        mins = self.add_state() 
+        zero = self.add_state() 
+        nms = self.add_state() 
         current = old_current
-        self.states[current].trans["-"] = current
-        self.states[current].trans["0"] = current + 1
+        self.states[current].trans['0'] = zero
+        self.states[current].trans['-'] = mins
         for d in "123456789":
-            self.states[current].trans[d] = current + 1
-        old_current = self.add_state()
-        self.states[old_current].trans["0"] = current + 1
+            self.states[current].trans[d] = nms
+        current = mins
+        self.states[current].trans['0'] = zero
         for d in "123456789":
-            self.states[old_current].trans[d] = current + 2
-        self.states[old_current].trans["."] = current + 3
-        old_current = self.add_state()
+            self.states[current].trans[d] = nms
+        current = zero
+        nums = self.add_state()
+        self.states[current].trans["."] = nums
+        current = nms
         for d in "0123456789":
-            self.states[old_current].trans[d] = current + 2
-        self.states[old_current].trans["."] = current + 3
-        old_current = self.add_state()
+            self.states[current].trans[d] = current
+        self.states[current].trans["."] = nums
+        current = nums
+        last = self.add_state()
         for d in "0123456789":
-            self.states[old_current].trans[d] = current + 3
+            self.states[current].trans[d] = last
+        n = self.add_state()
+        for d in "0123456789":
+            self.states[last].trans[d] = last
         if i < lenght - 1:
-            self.states[old_current].trans[","] = current + 4
-            return self.add_state()
-        if i >= lenght - 1:
-            n = self.add_state()
-            self.states[old_current].trans["}"] = n
-            self.states[current + 1].trans["}"] = n
-            # self.states[current + 2].trans["}"] = n
-            m = self.add_state()
-            self.states[n].trans["}"] = m
-            self.states[m].trans["Ċ"] = float("-inf")
-            return m
-        return old_current
+            j = self.add_state()
+            self.states[last].trans[","] = n
+            self.states[n].trans["Ġ"] = j
+            return j
+        else:
+            self.states[last].trans["}"] = n
+            self.states[n].trans["}"] = float("-inf")
+        return n
 
     def string_state(self, current: int, i: int, lenght: int) -> int:
         """Build the sub-trie accepting a JSON string value.

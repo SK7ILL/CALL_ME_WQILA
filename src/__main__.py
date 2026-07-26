@@ -1,9 +1,9 @@
 import json
 from typing import Any, Dict, List, Optional
-
+from rich import print
 from llm_sdk import Small_LLM_Model
-from src.parser import Function, Parse
-from src.structure import Trie
+from .parser import Function, Parse
+from .structure import Trie
 
 
 class Call:
@@ -86,15 +86,21 @@ class Call:
             The instruction prompt to prepend to every user prompt.
         """
         functions = self.format(Parsed.functions)
-        prompt = f"""You are a precise assistant that outputs
-                    structured data only.
-                    Respond with valid JSON matching the required schema.
-                    Do not include any text,
-                    explanation, or formatting outside the JSON object.
-                    Do not use markdown code
-                    blocks.
-                    here are the allowed function : {functions}"
-                    """
+        prompt = ("You are a function router.\n"
+                  "Your only task is to pick the correct function for the"
+                  "user's request and extract its arguments.\n"
+                  "You do not chat, answer questions, or explain anything.\n"
+                  "Rules:\n"
+                  "- Output ONLY a valid JSON object, nothing else."
+                  "No markdown, no code fences, no extra text.\n"
+                  "- Choose exactly one function name from the list below,"
+                  "copied exactly as written.\n"
+                  "The number parameter is float.\n"
+                  "- Output format: {\"function\": \"<name>\","
+                  "\"parameters\": {...}}\n"
+                  "functions definition:\n"
+                  f"{functions}\n"
+                  f"user: ")
         return prompt
 
     def get_prompts(self) -> List[str]:
@@ -150,7 +156,7 @@ class Call:
         """Append every token in ``lst`` to ``ids``.
 
         Args:
-            lst: Token ids to append.
+            lst: Token ids to append
             ids: The destination list, mutated in place.
 
         Returns:
@@ -168,7 +174,7 @@ class Call:
             prompt: The original prompt that produced ``string``.
         """
         fix = json.loads(string)
-        fix = {prompt: prompt, **fix}
+        fix = {"prompt": prompt, **fix}
         print(json.dumps(fix, indent=4))
         self.json.append(fix)
 
@@ -210,7 +216,7 @@ class Call:
         for prompt in prompts:
             next_state: Optional[int] = 0
             out = ""
-            pro_id = s.encode(prompt).tolist()[0]
+            pro_id = s.encode(prompt + "\nAnswer:\n").tolist()[0]
             super_id = base_id + pro_id
             while 1:
                 mask = s.get_logits_from_input_ids(super_id)
@@ -235,6 +241,7 @@ class Call:
                     else:
                         super_id.append(next_t)
                 out += string
+                print(string, end="", flush=True)
                 if next_state == float("-inf"):
                     self.to_json(out, prompt)
                     break
@@ -243,5 +250,7 @@ class Call:
 
 Parsed = Parse()
 s = Small_LLM_Model(Parsed.arg.model)
+
 model = Call(Parsed, s)
+print(model.Tr.trie)
 model.main()
