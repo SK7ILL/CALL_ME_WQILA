@@ -94,10 +94,6 @@ class Call:
                   "- Output ONLY a valid JSON object, nothing else."
                   "No markdown, no code fences, no extra text.\n"
                   "- Choose exactly one function name from the list below,"
-                  "copied exactly as written.\n"
-                  "The number parameter is float.\n"
-                  "- Output format: {\"function\": \"<name>\","
-                  "\"parameters\": {...}}\n"
                   "functions definition:\n"
                   f"{functions}\n"
                   f"user: ")
@@ -252,5 +248,4 @@ Parsed = Parse()
 s = Small_LLM_Model(Parsed.arg.model)
 
 model = Call(Parsed, s)
-print(model.Tr.trie)
 model.main()
