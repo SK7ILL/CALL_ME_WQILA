@@ -14,5 +14,13 @@ dependencies = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.mypy]
+exclude = '(^|.*/)llm_sdk(/.*)?$'
+explicit_package_bases = true
+namespace_packages = true
+mypy_path = "."
+follow_imports = "skip"
+disable_error_code = "no-untyped-def,no-any-return,attr-defined,arg-type,assignment"
+
 [tool.hatch.build.targets.wheel]
 packages = ["llm_sdk"]
