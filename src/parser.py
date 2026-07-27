@@ -49,7 +49,7 @@ class Parse:
         arg: The parsed ``argparse.Namespace`` of CLI arguments.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize by parsing CLI arguments and loading definitions."""
         self.loaded: List[dict] = []
         self.names: List[str] = []
@@ -57,7 +57,7 @@ class Parse:
         self.arging()
         self.reading()
 
-    def arging(self):
+    def arging(self) -> None:
         """Parse CLI arguments into ``self.arg``.
 
         Recognized arguments:
@@ -85,7 +85,7 @@ class Parse:
                             default="Qwen/Qwen3-0.6B")
         self.arg = parsed.parse_args()
 
-    def reading(self):
+    def reading(self) -> None:
         """Load the functions-definition file and validate each entry.
 
         Populates ``self.loaded`` with the raw JSON records, ``self.names``

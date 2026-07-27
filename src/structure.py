@@ -7,9 +7,9 @@ toward a well-formed ``{"name": ..., "parameters": {...}}`` JSON object are
 allowed.
 """
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, cast
 import json
-from llm_sdk import Small_LLM_Model
+from llm_sdk.llm_sdk import Small_LLM_Model
 import src.parser as parser
 
 
@@ -156,7 +156,7 @@ class Trie:
             # self.states[current + 2].trans["}"] = n
             m = self.add_state()
             self.states[n].trans["}"] = m
-            self.states[m].trans["Ċ"] = float("-inf")
+            self.states[m].trans["Ċ"] = -1
             return m
         return old_current
 
@@ -227,7 +227,7 @@ class Trie:
             return j
         else:
             self.states[last].trans["}"] = n
-            self.states[n].trans["}"] = float("-inf")
+            self.states[n].trans["}"] = -1
         return n
 
     def string_state(self, current: int, i: int, lenght: int) -> int:
@@ -261,7 +261,7 @@ class Trie:
             self.states[a].trans['"'] = p
             self.states[p].trans["}"] = k
             self.states[k].trans["}"] = n
-            self.states[n].trans["Ċ"] = float("-inf")
+            self.states[n].trans["Ċ"] = -1
             return n
 
     def states_creation(self) -> None:
@@ -278,7 +278,9 @@ class Trie:
                     f'"{p}": '.replace(" ", "Ġ"), current
                 )
                 if x.parameters[p].type == "integer":
-                    current = self.integer_state(current, i, len(x.parameters))
+                    current = cast(
+                        int,
+                        self.integer_state(current, i, len(x.parameters)))
                 if x.parameters[p].type == "string":
                     current = self.string_state(current, i, len(x.parameters))
                 if x.parameters[p].type == "number":
@@ -292,7 +294,7 @@ class Trie:
         for i in range(0, len(self.states)):
             self.trie[i] = self.states[i].trans
 
-    def rehab(self, saved: int) -> Dict[Any, Any]:
+    def dive(self, saved: int) -> Dict[Any, Any]:
         """Compute which vocabulary tokens are allowed from a given state.
 
         Args:
@@ -300,22 +302,23 @@ class Trie:
 
         Returns:
             A mapping from allowed vocabulary token id to the resulting
-            state id (or ``float("-inf")`` if that token ends generation).
+            state id (or ``-1`` if that token ends generation).
             If the state accepts arbitrary string content, returns
             ``{None: saved}``.
         """
         allowed: Dict[Any, Any] = {}
         if saved in self.cache:
-            return self.cache[saved]
+            cached: Dict[Any, Any] = self.cache[saved]
+            return cached
         if None in self.trie[saved]:
             return {None: saved}
         for ids in self.vocab:
             current = saved
             valid = True
-            if current == float("-inf"):
+            if current == -1:
                 break
             for x in self.vocab[ids]:
-                if current == float("-inf"):
+                if current == -1:
                     break
                 if x in self.trie[current]:
                     current = self.trie[current][x]
@@ -323,8 +326,8 @@ class Trie:
                     valid = False
                     break
             if valid:
-                if current == float("-inf"):
-                    allowed[ids] = float("-inf")
+                if current == -1:
+                    allowed[ids] = -1
                 else:
                     allowed[ids] = current
         self.cache[saved] = allowed

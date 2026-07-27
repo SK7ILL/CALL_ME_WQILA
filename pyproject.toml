@@ -1,30 +1,12 @@
 [project]
-name = "llm-sdk"
+name = "call-me-wqila"
 version = "0.1.0"
-description = "LLM SDK for local model inference"
+description = "Add your description here"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "torch>=2.0.0",
-    "transformers>=4.40.0",
-    "huggingface-hub>=0.20.0",
-    "pydantic>=2.13.4",
-    "rich>=15.0.0",
-    "argparse>=1.4.0",
     "flake8>=7.3.0",
     "mypy>=2.3.0",
+    "pydantic>=2.13.4",
+    "rich>=15.0.0",
 ]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.mypy]
-exclude = '(^|.*/)llm_sdk(/.*)?$'
-explicit_package_bases = true
-namespace_packages = true
-mypy_path = "."
-follow_imports = "skip"
-disable_error_code = "no-untyped-def,no-any-return,attr-defined,arg-type,assignment"
-
-[tool.hatch.build.targets.wheel]
-packages = ["llm_sdk"]

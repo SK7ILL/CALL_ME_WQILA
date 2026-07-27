@@ -1,9 +1,9 @@
 import json
 from typing import Any, Dict, List
 from rich import print
-from llm_sdk import Small_LLM_Model
-from .parser import Function, Parse
-from .structure import Trie
+from llm_sdk.llm_sdk import Small_LLM_Model
+from src.parser import Function, Parse
+from src.structure import Trie
 
 
 class Call:
@@ -220,7 +220,7 @@ class Call:
             super_id = base_id + pro_id
             while 1:
                 mask = s.get_logits_from_input_ids(super_id)
-                allowed_ids = self.Tr.rehab(next_state)
+                allowed_ids = self.Tr.dive(next_state)
                 if allowed_ids is None:
                     break
                 mask = self.mask_unwanted(mask, allowed_ids.keys())
@@ -242,7 +242,7 @@ class Call:
                         super_id.append(next_t)
                 out += string
                 print(string, end="", flush=True)
-                if next_state == float("-inf"):
+                if next_state == -1:
                     self.to_json(out, prompt)
                     break
         self.write_to_json()
