@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from rich import print
 from llm_sdk import Small_LLM_Model
 from .parser import Function, Parse
@@ -33,7 +33,7 @@ class Call:
         self.path = self.llm.get_path_to_vocab_file()
         self.dic: Dict[Any, Any] = {}
         self.own_dict()
-        self.Tr = Trie(Parsed)
+        self.Tr = Trie(Parsed, self.llm)
         self.is_backslach = False
         self.json: List[Dict[str, Any]] = []
 
@@ -95,6 +95,9 @@ class Call:
                   "No markdown, no code fences, no extra text.\n"
                   "- Choose exactly one function name from the list below,"
                   "functions definition:\n"
+                  "Note: \n"
+                  "- Number should be represented as a float"
+                  "- First Note does not get applied to the regex parametres"
                   f"{functions}\n"
                   f"user: ")
         return prompt
@@ -210,8 +213,9 @@ class Call:
         super_prompt = self.generate_super(Parsed)
         base_id = s.encode(super_prompt).tolist()[0]
         for prompt in prompts:
-            next_state: Optional[int] = 0
+            next_state: int = 0
             out = ""
+            print(f"- PROMPT: {prompt}")
             pro_id = s.encode(prompt + "\nAnswer:\n").tolist()[0]
             super_id = base_id + pro_id
             while 1:
@@ -244,8 +248,8 @@ class Call:
         self.write_to_json()
 
 
-Parsed = Parse()
-s = Small_LLM_Model(Parsed.arg.model)
-
-model = Call(Parsed, s)
-model.main()
+if __name__ == "__main__":
+    Parsed = Parse()
+    s = Small_LLM_Model(Parsed.arg.model)
+    model = Call(Parsed, s)
+    model.main()

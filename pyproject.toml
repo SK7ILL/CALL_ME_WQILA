@@ -8,6 +8,10 @@ dependencies = [
     "transformers>=4.40.0",
     "huggingface-hub>=0.20.0",
     "pydantic>=2.13.4",
+    "rich>=15.0.0",
+    "argparse>=1.4.0",
+    "flake8>=7.3.0",
+    "mypy>=2.3.0",
 ]
 
 [build-system]

@@ -8,14 +8,9 @@ allowed.
 """
 
 from typing import Any, Dict, List, Union
-
 import json
-
 from llm_sdk import Small_LLM_Model
 import src.parser as parser
-
-Parsed = parser.Parse()
-llm = Small_LLM_Model()
 
 
 class Node:
@@ -56,7 +51,7 @@ class Trie:
             (unused elsewhere, kept for compatibility).
     """
 
-    def __init__(self, Parsed: parser.Parse):
+    def __init__(self, Parsed: parser.Parse, llm: Small_LLM_Model):
         """Initialize and fully build the trie for the given functions.
 
         Args:
@@ -66,6 +61,7 @@ class Trie:
         self.Parsed = Parsed
         self.Functions = Parsed.functions
         self.state = 0
+        self.llm = llm
         self.states: List[Node] = []
         self.token_trans: Dict[Any, Any] = {}
         self.allowed: List[Any] = []
@@ -78,7 +74,7 @@ class Trie:
 
     def construct(self) -> None:
         """Load the vocabulary file and precompute per-function skeletons."""
-        path = llm.get_path_to_vocab_file()
+        path = self.llm.get_path_to_vocab_file()
         with open(path) as file:
             loaded = json.load(file)
         for key, value in loaded.items():
@@ -198,9 +194,9 @@ class Trie:
             The id of the state reached after the number (and any
             following separator) is fully consumed.
         """
-        mins = self.add_state() 
-        zero = self.add_state() 
-        nms = self.add_state() 
+        mins = self.add_state()
+        zero = self.add_state()
+        nms = self.add_state()
         current = old_current
         self.states[current].trans['0'] = zero
         self.states[current].trans['-'] = mins
